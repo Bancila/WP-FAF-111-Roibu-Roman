@@ -214,11 +214,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           SendMessage(hwndInputText, WM_GETTEXT, iTextLength+1, (LPARAM)szText);
           SendMessage(hwndOutputText, WM_SETTEXT, 0, (LPARAM)szText);
           free(szText);
-<<<<<<< HEAD
-=======
-
-          MessageBox(NULL, TEXT("UPDATE button clicked!"), TEXT("Click!"), MB_OK);
->>>>>>> 16638e96ee71414d6721d4f149c2eebda5efc65d
           break;
 
         case IDC_CLEAR_BUTTON:

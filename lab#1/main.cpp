@@ -1,4 +1,6 @@
 #include <windows.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define IDC_UPDATE_BUTTON   100
 #define IDC_CLEAR_BUTTON    101
@@ -13,7 +15,6 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 char szClassName[ ] = "Lab1Class";
 HINSTANCE hProgramInstance;
-
 
 int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)
 {
@@ -58,6 +59,8 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
 
   /* Make the window visible on the screen */
   ShowWindow (hwnd, nCmdShow);
+
+  srand(time(NULL));
 
   /* Run the message loop. It will run until GetMessage() returns 0 */
   while (GetMessage (&messages, NULL, 0, 0))
@@ -231,8 +234,18 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       break;
 
     case WM_CLOSE:
-      MessageBox(NULL, TEXT("[x] button clicked!"), TEXT("Click!"), MB_OK);
-      SendMessage(hwnd, WM_DESTROY, 0, 0);
+      screenW = GetSystemMetrics(SM_CXSCREEN);
+      screenH = GetSystemMetrics(SM_CYSCREEN);
+
+      GetWindowRect(hwnd, &rect);
+      SetWindowPos(
+        hwnd, 0,
+        (screenW - rect.right) / 10 * (rand() % 11),
+        (screenH - rect.bottom) / 10 * (rand() % 11),
+        0, 0,
+        SWP_NOZORDER|SWP_NOSIZE);
+
+      MessageBox(NULL, TEXT("Gotcha!\nTo quit safely, click Quit button."), TEXT("HAHAHA!"), MB_OK);
       break;
 
     case WM_DESTROY:

@@ -85,24 +85,26 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
   // Declare handles for input and output text areas
   static HWND hwndInputText;
   static HWND hwndOutputText;
-  int screenW;
-  int screenH;
+  int iScreenW;
+  int iScreenH;
   RECT rect;
   PAINTSTRUCT ps;
   HDC hdc;
+  int iTextLength;
+  char * szText;
 
 
   switch(message)
   {
     case WM_CREATE:
-      screenW = GetSystemMetrics(SM_CXSCREEN);
-      screenH = GetSystemMetrics(SM_CYSCREEN);
+      iScreenW = GetSystemMetrics(SM_CXSCREEN);
+      iScreenH = GetSystemMetrics(SM_CYSCREEN);
 
       GetWindowRect(hwnd, &rect);
       SetWindowPos(
         hwnd, 0,
-        (screenW - rect.right)/2,
-        (screenH - rect.bottom)/2,
+        (iScreenW - rect.right)/2,
+        (iScreenH - rect.bottom)/2,
         0, 0,
         SWP_NOZORDER|SWP_NOSIZE);
 
@@ -180,9 +182,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
       hwndOutputText = CreateWindowEx(
       (DWORD)NULL,
-      TEXT("static"),    // class
+      TEXT("edit"),    // class
       TEXT(""),        // caption
-      WS_CHILD | WS_VISIBLE | WS_BORDER,// | ES_READONLY,
+      WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_READONLY | ES_MULTILINE,
       10, 10,         // X & Y
       270, 150,         // width x height
       hwnd,
@@ -194,7 +196,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       (DWORD)NULL,
       TEXT("edit"),    // class
       TEXT("Your text goes here..."),        // caption
-      WS_CHILD | WS_VISIBLE | WS_BORDER,
+      WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE,
       10, 170,         // X & Y
       200, 50,         // width x height
       hwnd,
@@ -207,6 +209,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       switch(LOWORD(wParam))
       {
         case IDC_UPDATE_BUTTON:
+          iTextLength = SendMessage(hwndInputText, WM_GETTEXTLENGTH, 0, 0);
+          szText = (char*)malloc(iTextLength+1);
+          SendMessage(hwndInputText, WM_GETTEXT, iTextLength+1, (LPARAM)szText);
+          SendMessage(hwndOutputText, WM_SETTEXT, 0, (LPARAM)szText);
+          free(szText);
+
           MessageBox(NULL, TEXT("UPDATE button clicked!"), TEXT("Click!"), MB_OK);
           break;
 
@@ -236,14 +244,14 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       break;
 
     case WM_CLOSE:
-      screenW = GetSystemMetrics(SM_CXSCREEN);
-      screenH = GetSystemMetrics(SM_CYSCREEN);
+      iScreenW = GetSystemMetrics(SM_CXSCREEN);
+      iScreenH = GetSystemMetrics(SM_CYSCREEN);
 
       GetWindowRect(hwnd, &rect);
       SetWindowPos(
         hwnd, 0,
-        (screenW - rect.right) / 10 * (rand() % 11),
-        (screenH - rect.bottom) / 10 * (rand() % 11),
+        (iScreenW - rect.right) / 10 * (rand() % 11),
+        (iScreenH - rect.bottom) / 10 * (rand() % 11),
         0, 0,
         SWP_NOZORDER|SWP_NOSIZE);
 

@@ -215,7 +215,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           break;
 
         case IDC_QUIT_BUTTON:
-          MessageBox(NULL, TEXT("QUIT button clicked!"), TEXT("Click!"), MB_OK);
+          if(MessageBox(NULL, TEXT("Are you sure you want to quit?"), TEXT(""), MB_YESNO) == IDYES) {
+            SendMessage(hwnd, WM_DESTROY, 0, 0);
+          };
           break;
 
         case IDC_FONT1_BUTTON:

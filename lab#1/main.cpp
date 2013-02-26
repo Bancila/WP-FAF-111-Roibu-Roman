@@ -217,7 +217,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           break;
 
         case IDC_CLEAR_BUTTON:
-          MessageBox(NULL, TEXT("CLEAR button clicked!"), TEXT("Click!"), MB_OK);
+          SendMessage(hwndOutputText, WM_SETTEXT, 0, (LPARAM)"");
           break;
 
         case IDC_QUIT_BUTTON:

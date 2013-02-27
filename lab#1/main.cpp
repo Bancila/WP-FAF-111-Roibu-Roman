@@ -93,6 +93,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
   int iTextLength;
   char * szText;
   HFONT hfFont;
+  HWND hwndBtn;
 
 
   switch(message)
@@ -137,7 +138,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       (DWORD)NULL,
       TEXT("button"), // class
       TEXT("Quit"),   // caption
-      WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+      WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_OWNERDRAW,
       220, 230,        // X & Y
       60, 20,         // width x height
       hwnd,
@@ -246,6 +247,19 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           break;
 
       }
+      break;
+
+    case WM_CTLCOLORBTN:
+      hdc = (HDC)wParam;
+      hwndBtn = (HWND)lParam;
+      GetClientRect(hwndBtn, &rect);
+      hdc = BeginPaint(hwndBtn, &ps);
+      SetBkMode(hdc, TRANSPARENT);
+      SetBkColor(hdc, RGB(200, 50, 50));
+      SetTextColor(hdc, RGB(0, 0, 0));
+      DrawText(hdc, "Quit", -1,  &rect, DT_CENTER);
+      EndPaint(hwndBtn, &ps);
+      return (LRESULT)CreateSolidBrush(RGB(200, 50, 50));
       break;
 
     case WM_CLOSE:

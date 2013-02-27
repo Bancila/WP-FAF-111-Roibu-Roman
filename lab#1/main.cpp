@@ -206,7 +206,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           break;
 
         case IDC_QUIT_BUTTON:
-          if(MessageBox(NULL, TEXT("Are you sure you want to quit?"), TEXT(""), MB_YESNO) == IDYES) {
+          if(MessageBox(NULL, TEXT("Are you sure you want to quit?"), TEXT("Quit?"), MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING) == IDYES) {
             SendMessage(hwnd, WM_DESTROY, 0, 0);
           };
           break;
@@ -281,7 +281,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         0, 0,
         SWP_NOZORDER|SWP_NOSIZE);
 
-      MessageBox(NULL, TEXT("Gotcha!\nTo quit safely, click Quit button."), TEXT("HAHAHA!"), MB_OK);
+      MessageBox(NULL, TEXT("Gotcha!\nTo quit safely, click Quit button."), TEXT("MUHAHA!"), MB_OK | MB_ICONASTERISK);
       break;
 
     case WM_DESTROY:

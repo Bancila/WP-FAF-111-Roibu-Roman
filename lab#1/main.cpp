@@ -229,19 +229,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       }
       break;
 
-    case WM_CTLCOLORBTN:
-      hdc = (HDC)wParam;
-      hwndBtn = (HWND)lParam;
-      GetClientRect(hwndBtn, &rect);
-      hdc = BeginPaint(hwndBtn, &ps);
-      SetBkMode(hdc, TRANSPARENT);
-      SetBkColor(hdc, RGB(200, 50, 50));
-      SetTextColor(hdc, RGB(0, 0, 0));
-      DrawText(hdc, "Quit", -1,  &rect, DT_CENTER);
-      EndPaint(hwndBtn, &ps);
-      return (LRESULT)CreateSolidBrush(RGB(200, 50, 50));
-      break;
-
     case WM_PAINT:
       hdc = BeginPaint(hwnd, &ps);
       GetClientRect(hwnd, &rect);
@@ -250,7 +237,37 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       DrawText(hdc, "Windows Programming", -1, &rect, DT_CENTER | DT_TOP);
       DrawText(hdc, "\n(c) Roman Roibu, 2013", -1, &rect, DT_CENTER | DT_TOP);
       EndPaint(hwnd, &ps);
-    break;
+      break;
+
+    case WM_DRAWITEM:
+      if((UINT)wParam == IDC_QUIT_BUTTON) {
+        LPDRAWITEMSTRUCT lpdis = (DRAWITEMSTRUCT*)lParam;
+        SIZE size;
+        char szQuitBtnText[5];
+
+        strcpy(szQuitBtnText, "Quit");
+        GetTextExtentPoint32(lpdis->hDC, szQuitBtnText, strlen(szQuitBtnText), &size);
+        SetTextColor(lpdis->hDC, RGB(250, 250, 250));
+        SetBkColor(lpdis->hDC, RGB(200, 50, 50));
+
+        ExtTextOut(
+          lpdis->hDC,
+          ((lpdis->rcItem.right - lpdis->rcItem.left) - size.cx) / 2,
+          ((lpdis->rcItem.bottom - lpdis->rcItem.top) - size.cy) / 2,
+          ETO_OPAQUE | ETO_CLIPPED,
+          &lpdis->rcItem,
+          szQuitBtnText,
+          strlen(szQuitBtnText),
+          NULL);
+
+        DrawEdge(
+          lpdis->hDC,
+          &lpdis->rcItem,
+          (lpdis->itemState & ODS_SELECTED ? EDGE_SUNKEN : EDGE_RAISED ),
+          BF_RECT);
+        return TRUE;
+      }
+      break;
 
     case WM_CLOSE:
       iScreenW = GetSystemMetrics(SM_CXSCREEN);

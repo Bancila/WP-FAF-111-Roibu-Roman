@@ -92,6 +92,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
   HDC hdc;
   int iTextLength;
   char * szText;
+  HFONT hfFont;
 
 
   switch(message)
@@ -147,7 +148,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       hwndFont1Button = CreateWindowEx(
       (DWORD)NULL,
       TEXT("button"),   // class
-      TEXT("Font 1"),   // caption
+      TEXT("Tahoma"),    // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
       10, 230,          // X & Y
       60, 20,          // width x height
@@ -159,7 +160,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       hwndFont2Button = CreateWindowEx(
       (DWORD)NULL,
       TEXT("button"),   // class
-      TEXT("Font 2"),   // caption
+      TEXT("Courier"),   // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
       80, 230,          // X & Y
       60, 20,          // width x height
@@ -171,7 +172,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       hwndFont3Button = CreateWindowEx(
       (DWORD)NULL,
       TEXT("button"),   // class
-      TEXT("Font 3"),   // caption
+      TEXT("Comic"),   // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
       150, 230,          // X & Y
       60, 20,          // width x height
@@ -203,6 +204,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       (HMENU)IDC_INPUT_TEXT,
       hProgramInstance,
       NULL);
+
+      hfFont = CreateFont(20,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("Tahoma"));
+      SendMessage(hwndOutputText, WM_SETFONT, (WPARAM)hfFont, 1);
       break;
 
     case WM_COMMAND:
@@ -227,15 +231,18 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
           break;
 
         case IDC_FONT1_BUTTON:
-          MessageBox(NULL, TEXT("FONT1 button clicked!"), TEXT("Click!"), MB_OK);
+          hfFont = CreateFont(20,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("Tahoma"));
+          SendMessage(hwndOutputText, WM_SETFONT, (WPARAM)hfFont, 1);
           break;
 
         case IDC_FONT2_BUTTON:
-          MessageBox(NULL, TEXT("FONT2 button clicked!"), TEXT("Click!"), MB_OK);
+          hfFont = CreateFont(20,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("Courier New"));
+          SendMessage(hwndOutputText, WM_SETFONT, (WPARAM)hfFont, 1);
           break;
 
         case IDC_FONT3_BUTTON:
-          MessageBox(NULL, TEXT("FONT3 button clicked!"), TEXT("Click!"), MB_OK);
+          hfFont = CreateFont(20,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("Comic Sans MS"));
+          SendMessage(hwndOutputText, WM_SETFONT, (WPARAM)hfFont, 1);
           break;
 
       }

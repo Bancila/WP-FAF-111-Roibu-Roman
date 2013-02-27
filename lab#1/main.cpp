@@ -18,18 +18,15 @@ HINSTANCE hProgramInstance;
 
 int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)
 {
-  HWND hwnd;               /* This is the handle for our window */
-  MSG messages;            /* Here messages to the application are saved */
-  WNDCLASSEX wincl;        /* Data structure for the windowclass */
+  HWND hwnd;
+  MSG messages;
+  WNDCLASSEX wincl;
 
-  /* The Window structure */
   wincl.hInstance = hThisInstance;
   wincl.lpszClassName = szClassName;
   wincl.lpfnWndProc = WindowProcedure;
   wincl.style = CS_DBLCLKS;
   wincl.cbSize = sizeof (WNDCLASSEX);
-
-  /* Use default icon and mouse-pointer */
   wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
   wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
   wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
@@ -38,63 +35,45 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
   wincl.cbWndExtra = 0;
   wincl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 
-  /* Register the window class, and if it fails quit the program */
   if(!RegisterClassEx(&wincl)) return 0;
 
-  /* The class is registered, let's create the program*/
   hwnd = CreateWindowEx (
-  0,                    /* Extended possibilites for variation */
-  szClassName,          /* Classname */
-  "Laboratory Work #1", /* Title Text */
-  WS_OVERLAPPEDWINDOW,  /* default window */
-  CW_USEDEFAULT,        /* Windows decides the position */
-  CW_USEDEFAULT,        /* where the window ends up on the screen */
-  544,                  /* The programs width */
-  375,                  /* and height in pixels */
-  HWND_DESKTOP,         /* The window is a child-window to desktop */
-  NULL,                 /* No menu */
-  hThisInstance,        /* Program Instance handler */
-  NULL                  /* No Window Creation data */
-  );
+  0,
+  szClassName,
+  "Laboratory Work #1",
+  WS_OVERLAPPEDWINDOW,
+  CW_USEDEFAULT, CW_USEDEFAULT,
+  544, 375,
+  HWND_DESKTOP,
+  NULL,
+  hThisInstance,
+  NULL);
 
-  /* Make the window visible on the screen */
   ShowWindow (hwnd, nCmdShow);
 
   srand(time(NULL));
 
-  /* Run the message loop. It will run until GetMessage() returns 0 */
   while (GetMessage (&messages, NULL, 0, 0))
   {
-    TranslateMessage(&messages); /* Translate virtual-key messages into character messages */
-    DispatchMessage(&messages);  /* Send message to WindowProcedure */
+    TranslateMessage(&messages);
+    DispatchMessage(&messages);
   }
 
-  /* The program return-value is 0 - The value that PostQuitMessage() gave */
   return messages.wParam;
 }
 
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  // Declare handles for buttons
-  static HWND hwndUpdateButton;
-  static HWND hwndClearButton;
-  static HWND hwndQuitButton;
-  static HWND hwndFont1Button;
-  static HWND hwndFont2Button;
-  static HWND hwndFont3Button;
-  // Declare handles for input and output text areas
   static HWND hwndInputText;
   static HWND hwndOutputText;
   int iScreenW;
   int iScreenH;
-  RECT rect;
   PAINTSTRUCT ps;
+  RECT rect;
   HDC hdc;
+  HWND hwndBtn;
   int iTextLength;
   char * szText;
-  HFONT hfFont;
-  HWND hwndBtn;
-
 
   switch(message)
   {
@@ -110,73 +89,73 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         0, 0,
         SWP_NOZORDER|SWP_NOSIZE);
 
-      hwndUpdateButton = CreateWindowEx(
+      CreateWindowEx(
         (DWORD)NULL,
-        TEXT("button"), // class
-        TEXT("Update"), // caption
+        TEXT("button"),
+        TEXT("Update"),
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        220, 200,        // X & Y
-        60, 20,         // width x height
+        220, 200,
+        60, 20,
         hwnd,
         (HMENU)IDC_UPDATE_BUTTON,
         hProgramInstance,
         NULL);
 
-      hwndClearButton = CreateWindowEx(
+      CreateWindowEx(
         (DWORD)NULL,
-        TEXT("button"), // class
-        TEXT("Clear"),  // caption
+        TEXT("button"),
+        TEXT("Clear"),
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        220, 230,        // X & Y
-        60, 20,         // width x height
+        220, 230,
+        60, 20,
         hwnd,
         (HMENU)IDC_CLEAR_BUTTON,
         hProgramInstance,
         NULL);
 
-      hwndQuitButton = CreateWindowEx(
+      CreateWindowEx(
       (DWORD)NULL,
-      TEXT("button"), // class
-      TEXT("Quit"),   // caption
+      TEXT("button"),
+      TEXT("Quit"),
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_OWNERDRAW,
-      220, 260,        // X & Y
-      60, 20,         // width x height
+      220, 260,
+      60, 20,
       hwnd,
       (HMENU)IDC_QUIT_BUTTON,
       hProgramInstance,
       NULL);
 
-      hwndFont1Button = CreateWindowEx(
+      CreateWindowEx(
       (DWORD)NULL,
-      TEXT("button"),   // class
-      TEXT("Tahoma"),    // caption
+      TEXT("button"),
+      TEXT("Tahoma"),
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      10, 260,          // X & Y
-      60, 20,          // width x height
+      10, 260,
+      60, 20,
       hwnd,
       (HMENU)IDC_FONT1_BUTTON,
       hProgramInstance,
       NULL);
 
-      hwndFont2Button = CreateWindowEx(
+      CreateWindowEx(
       (DWORD)NULL,
-      TEXT("button"),   // class
-      TEXT("Courier"),   // caption
+      TEXT("button"),
+      TEXT("Courier"),
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      80, 260,          // X & Y
-      60, 20,          // width x height
+      80, 260,
+      60, 20,
       hwnd,
       (HMENU)IDC_FONT2_BUTTON,
       hProgramInstance,
       NULL);
 
-      hwndFont3Button = CreateWindowEx(
+      CreateWindowEx(
       (DWORD)NULL,
-      TEXT("button"),   // class
-      TEXT("Comic"),   // caption
+      TEXT("button"),
+      TEXT("Comic"),
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      150, 260,          // X & Y
-      60, 20,          // width x height
+      150, 260,
+      60, 20,
       hwnd,
       (HMENU)IDC_FONT3_BUTTON,
       hProgramInstance,
@@ -184,11 +163,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
       hwndOutputText = CreateWindowEx(
       (DWORD)NULL,
-      TEXT("edit"),    // class
-      TEXT(""),        // caption
+      TEXT("edit"),
+      TEXT(""),
       WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_READONLY | ES_MULTILINE,
-      10, 40,         // X & Y
-      270, 150,         // width x height
+      10, 40,
+      270, 150,
       hwnd,
       (HMENU)IDC_OUTPUT_TEXT,
       hProgramInstance,
@@ -196,11 +175,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
       hwndInputText = CreateWindowEx(
       (DWORD)NULL,
-      TEXT("edit"),    // class
-      TEXT("Your text goes here..."),        // caption
+      TEXT("edit"),
+      TEXT("Your text goes here..."),
       WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE,
-      10, 200,         // X & Y
-      200, 50,         // width x height
+      10, 200,
+      200, 50,
       hwnd,
       (HMENU)IDC_INPUT_TEXT,
       hProgramInstance,
@@ -288,10 +267,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       break;
 
     case WM_DESTROY:
-      PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
+      PostQuitMessage (0);
       break;
 
-    default:                      /* for messages that we don't deal with */
+    default:
       return DefWindowProc (hwnd, message, wParam, lParam);
   }
 

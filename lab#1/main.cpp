@@ -115,7 +115,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         TEXT("button"), // class
         TEXT("Update"), // caption
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        220, 170,        // X & Y
+        220, 200,        // X & Y
         60, 20,         // width x height
         hwnd,
         (HMENU)IDC_UPDATE_BUTTON,
@@ -127,7 +127,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         TEXT("button"), // class
         TEXT("Clear"),  // caption
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        220, 200,        // X & Y
+        220, 230,        // X & Y
         60, 20,         // width x height
         hwnd,
         (HMENU)IDC_CLEAR_BUTTON,
@@ -139,7 +139,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("button"), // class
       TEXT("Quit"),   // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_OWNERDRAW,
-      220, 230,        // X & Y
+      220, 260,        // X & Y
       60, 20,         // width x height
       hwnd,
       (HMENU)IDC_QUIT_BUTTON,
@@ -151,7 +151,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("button"),   // class
       TEXT("Tahoma"),    // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      10, 230,          // X & Y
+      10, 260,          // X & Y
       60, 20,          // width x height
       hwnd,
       (HMENU)IDC_FONT1_BUTTON,
@@ -163,7 +163,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("button"),   // class
       TEXT("Courier"),   // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      80, 230,          // X & Y
+      80, 260,          // X & Y
       60, 20,          // width x height
       hwnd,
       (HMENU)IDC_FONT2_BUTTON,
@@ -175,7 +175,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("button"),   // class
       TEXT("Comic"),   // caption
       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-      150, 230,          // X & Y
+      150, 260,          // X & Y
       60, 20,          // width x height
       hwnd,
       (HMENU)IDC_FONT3_BUTTON,
@@ -187,7 +187,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("edit"),    // class
       TEXT(""),        // caption
       WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_READONLY | ES_MULTILINE,
-      10, 10,         // X & Y
+      10, 40,         // X & Y
       270, 150,         // width x height
       hwnd,
       (HMENU)IDC_OUTPUT_TEXT,
@@ -199,7 +199,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       TEXT("edit"),    // class
       TEXT("Your text goes here..."),        // caption
       WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE,
-      10, 170,         // X & Y
+      10, 200,         // X & Y
       200, 50,         // width x height
       hwnd,
       (HMENU)IDC_INPUT_TEXT,
@@ -261,6 +261,16 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       EndPaint(hwndBtn, &ps);
       return (LRESULT)CreateSolidBrush(RGB(200, 50, 50));
       break;
+
+    case WM_PAINT:
+      hdc = BeginPaint(hwnd, &ps);
+      GetClientRect(hwnd, &rect);
+      SetBkMode(hdc, TRANSPARENT);
+      SetTextColor(hdc, RGB(80, 80, 80));
+      DrawText(hdc, "Windows Programming", -1, &rect, DT_CENTER | DT_TOP);
+      DrawText(hdc, "\n(c) Roman Roibu, 2013", -1, &rect, DT_CENTER | DT_TOP);
+      EndPaint(hwnd, &ps);
+    break;
 
     case WM_CLOSE:
       iScreenW = GetSystemMetrics(SM_CXSCREEN);

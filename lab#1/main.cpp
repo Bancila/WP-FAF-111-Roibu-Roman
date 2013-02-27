@@ -43,7 +43,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
   "Laboratory Work #1",
   WS_OVERLAPPEDWINDOW,
   CW_USEDEFAULT, CW_USEDEFAULT,
-  544, 375,
+  306, 340,
   HWND_DESKTOP,
   NULL,
   hThisInstance,
@@ -74,6 +74,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
   HWND hwndBtn;
   int iTextLength;
   char * szText;
+  HFONT hfFont;
 
   switch(message)
   {

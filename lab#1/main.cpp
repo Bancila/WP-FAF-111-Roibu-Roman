@@ -25,7 +25,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
   wincl.hInstance = hThisInstance;
   wincl.lpszClassName = szClassName;
   wincl.lpfnWndProc = WindowProcedure;
-  wincl.style = CS_DBLCLKS;
+  wincl.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
   wincl.cbSize = sizeof (WNDCLASSEX);
   wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
   wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
   0,
   szClassName,
   "Laboratory Work #1",
-  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX),
+  WS_OVERLAPPEDWINDOW,
   CW_USEDEFAULT, CW_USEDEFAULT,
   306, 340,
   HWND_DESKTOP,

@@ -269,19 +269,32 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
       }
       break;
 
-    case WM_CLOSE:
-      iScreenW = GetSystemMetrics(SM_CXSCREEN);
-      iScreenH = GetSystemMetrics(SM_CYSCREEN);
+    case WM_SYSCOMMAND:
+      switch(wParam) {
 
-      GetWindowRect(hwnd, &rect);
-      SetWindowPos(
-        hwnd, 0,
-        (iScreenW - rect.right) / 10 * (rand() % 11),
-        (iScreenH - rect.bottom) / 10 * (rand() % 11),
-        0, 0,
-        SWP_NOZORDER|SWP_NOSIZE);
+        case SC_MINIMIZE:
+          return MessageBox(NULL, TEXT("Sorry, NO!"), TEXT("Minimize Button Clicked!"), MB_OK | MB_ICONWARNING);
 
-      MessageBox(NULL, TEXT("Gotcha!\nTo quit safely, click Quit button."), TEXT("MUHAHA!"), MB_OK | MB_ICONASTERISK);
+        case SC_MAXIMIZE:
+          return MessageBox(NULL, TEXT("Maximizing is too mainstream..."), TEXT("Maximize Button Clicked!"), MB_OK | MB_ICONASTERISK);
+
+        case SC_CLOSE:
+          iScreenW = GetSystemMetrics(SM_CXSCREEN);
+          iScreenH = GetSystemMetrics(SM_CYSCREEN);
+
+          GetWindowRect(hwnd, &rect);
+          SetWindowPos(
+            hwnd, 0,
+            (iScreenW - rect.right) / 10 * (rand() % 11),
+            (iScreenH - rect.bottom) / 10 * (rand() % 11),
+            0, 0,
+            SWP_NOZORDER|SWP_NOSIZE);
+
+            return MessageBox(NULL, TEXT("Gotcha!\nTo quit safely, click Quit button."), TEXT("MUHAHA!"), MB_OK | MB_ICONASTERISK);
+            
+        default:
+          return DefWindowProc(hwnd, message, wParam, lParam);
+      }
       break;
 
     case WM_DESTROY:

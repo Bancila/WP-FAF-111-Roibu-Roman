@@ -3,6 +3,10 @@
 
 # Report
 *.pdf
+*.tex
+
+# Ruby script for generating the report
+*.rb
 
 # Mac system file
 .DS_Store

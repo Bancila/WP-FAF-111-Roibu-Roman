@@ -48,7 +48,7 @@ Also, I have Windows 8 installed on Parallels virtual machine, which I used to r
 First of all, I made a wireframe model of the application general layout and functionality, using the [MockFlow](http://mockflow.com/) tool. 
 Here is the mockup I came up with:
 
-![Mockup](http://i.imgur.com/ht7NDwt.png)
+![Mockup](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%231/pictures/wireframe.png)
 
 The dialog bubbles describe each element and it's functionality.
 
@@ -56,7 +56,7 @@ Result Application
 ------------------
 This is a screen shot of the application in the virtual Windows 8 environment:
 
-![Screenshot](http://i.imgur.com/A9Vs9xx.png)
+![Screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%231/pictures/screen.png)
 
 Conclusions
 -----------

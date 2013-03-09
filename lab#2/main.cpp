@@ -1,28 +1,29 @@
 #include <windows.h>
 #include <stdlib.h>
 
-#define IDC_LIST_BOX      100
-#define IDC_NEW_ITEM      101
+#define IDC_LIST_BOX            100
+#define IDC_NEW_ITEM            101
 
-#define IDC_ADD_BUTTON    102
-#define IDC_REMOVE_BUTTON 103
-#define IDC_DAY_BUTTON    104
-#define IDC_NIGHT_BUTTON  105
+#define IDC_ADD_BUTTON          102
+#define IDC_REMOVE_BUTTON       103
+#define IDC_CLEAR_BUTTON        104
+#define IDC_DAY_BUTTON          105
+#define IDC_NIGHT_BUTTON        106
 
-#define IDC_FILE_EXIT     106
-#define IDC_VIEW_DAY      107
-#define IDC_VIEW_NIGHT    108
-#define IDC_HELP_ABOUT    109
+#define IDC_FILE_EXIT           107
+#define IDC_VIEW_DAY            108
+#define IDC_VIEW_NIGHT          109
+#define IDC_HELP_ABOUT          110
 
-#define IDC_BACKGROUND_SCROLL 110
-#define IDC_HEIGHT_SCROLL     111
-#define IDC_WIDTH_SCROLL      112
+#define IDC_BACKGROUND_SCROLL   111
+#define IDC_HEIGHT_SCROLL       112
+#define IDC_WIDTH_SCROLL        113
 
-#define IDC_LABEL1            113
-#define IDC_LABEL2            114
-#define IDC_LABEL3            115
-#define IDC_LABEL4            116
-#define IDC_LABEL5            117
+#define IDC_LABEL1              114
+#define IDC_LABEL2              115
+#define IDC_LABEL3              116
+#define IDC_LABEL4              117
+#define IDC_LABEL5              118
 
 int iMinWindowHeight = 610;
 int iMinWindowWidth  = 420;
@@ -126,6 +127,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     PAINTSTRUCT ps;
     TEXTMETRIC tm;
     SCROLLINFO si;
+    HBRUSH brush;
     RECT rect;
     int color;
     HDC hdc;
@@ -476,7 +478,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     SetScrollPos(hwndBackgroundScroll, SB_CTL, si.nPos, TRUE);
                 }
                 // Set background color
-                HBRUSH brush = CreateSolidBrush(RGB(color, color, color));
+                brush = CreateSolidBrush(RGB(color, color, color));
                 SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
                 SendMessage(hwnd, WM_SIZE, NULL, NULL);
                 break;
@@ -582,13 +584,63 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             }
             break;
 
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDC_ADD_BUTTON:
+                    break;
+
+                case IDC_REMOVE_BUTTON:
+                    break;
+
+                case IDC_CLEAR_BUTTON:
+                    break;
+
+                case IDC_DAY_BUTTON:
+                    // Set background color
+                    brush = CreateSolidBrush(RGB(255, 255, 255));
+                    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
+                    si.cbSize = sizeof(si);
+                    si.fMask = SIF_POS;
+                    GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
+                    si.nPos = 255;
+                    SetScrollInfo(hwndBackgroundScroll, SB_CTL, &si, TRUE);
+                    SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                    break;
+
+                case IDC_NIGHT_BUTTON:
+                    // Set background color
+                    brush = CreateSolidBrush(RGB(0, 0, 0));
+                    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
+                    si.cbSize = sizeof(si);
+                    si.fMask = SIF_POS;
+                    GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
+                    si.nPos = 0;
+                    SetScrollInfo(hwndBackgroundScroll, SB_CTL, &si, TRUE);
+                    SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                    break;
+
+                case IDC_FILE_EXIT:
+                    SendMessage(hwnd, WM_DESTROY, NULL, NULL);
+                    break;
+
+                case IDC_VIEW_DAY:
+                    SendMessage(hwnd, WM_COMMAND, IDC_DAY_BUTTON, lParam);
+                    break;
+
+                case IDC_VIEW_NIGHT:
+                    SendMessage(hwnd, WM_COMMAND, IDC_NIGHT_BUTTON, lParam);
+                    break;
+
+                case IDC_HELP_ABOUT:
+                    break;
+
+                default:
+                    DefWindowProc(hwnd, WM_COMMAND, wParam, lParam);
+                    break;
+            }
+            break;
+
         case WM_PAINT:
-            // color = (int)wParam;
-            // hdc = BeginPaint(hwnd, &ps);
-            // GetClientRect(hwnd, &rect);
-            // SetBkMode(hdc, OPAQUE);
-            // SetBkColor(hdc, RGB(color, color, color));
-            // EndPaint(hwnd, &ps);
             return DefWindowProc (hwnd, WM_PAINT, wParam, lParam);
             break;
 

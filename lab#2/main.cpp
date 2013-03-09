@@ -92,11 +92,20 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     static HWND hwndLabel4;
     static HWND hwndLabel5;
 
+    LONG id;
+
     // Size and position variables
+    int iSysWidth;
+    int iSysHeight;
+    int iWinWidth;
+    int iWinHeight;
+
     int iWidth  = 60;   // Button width
     int iHeight = 30;   // Button height
     int x;
     int y;
+
+    float iUnit;
 
     // ListBox size and initial position
     int xListBox       = 10;
@@ -113,6 +122,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int cyChar;
 
     // Paint and size structs
+    PWINDOWINFO pwi;
     PAINTSTRUCT ps;
     TEXTMETRIC tm;
     SCROLLINFO si;
@@ -208,24 +218,15 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 "Scrollbar", 
                 NULL,
                 WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
-                0, 0, 0, 0,
+                0, 0, iListBoxWidth, 0,
                 hwnd,
                 (HMENU)IDC_BACKGROUND_SCROLL,
                 hProgramInstance,
                 NULL);
-            SetScrollRange(hwndBackgroundScroll, SB_CTL, 0, 255, FALSE);
+            SetScrollRange(hwndBackgroundScroll, SB_CTL, 0, 255, TRUE);
+            SetScrollPos(hwndBackgroundScroll, SB_CTL, 255, TRUE);
 
             hwndWidthScroll = CreateWindow(
-                "Scrollbar", 
-                NULL,
-                WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
-                0, 0, 0, 0, hwnd,
-                (HMENU)IDC_HEIGHT_SCROLL,
-                hProgramInstance,
-                NULL);
-            SetScrollRange(hwndHeightScroll, SB_CTL, 0, 100, FALSE);
-
-            hwndHeightScroll = CreateWindow(
                 "Scrollbar", 
                 NULL,
                 WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
@@ -233,7 +234,17 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 (HMENU)IDC_WIDTH_SCROLL,
                 hProgramInstance,
                 NULL);
-            SetScrollRange(hwndWidthScroll, SB_CTL, 0, 100, FALSE);
+            SetScrollRange(hwndWidthScroll, SB_CTL, 0, 100, TRUE);
+
+            hwndHeightScroll = CreateWindow(
+                "Scrollbar", 
+                NULL,
+                WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
+                0, 0, 0, 0, hwnd,
+                (HMENU)IDC_HEIGHT_SCROLL,
+                hProgramInstance,
+                NULL);
+            SetScrollRange(hwndHeightScroll, SB_CTL, 0, 100, TRUE);
 
             hwndAddButton = CreateWindowEx(
                 (DWORD)NULL,
@@ -365,6 +376,18 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             y = y + iHeight + 5;
             MoveWindow(hwndNightButton, x, y, iWidth, iHeight, TRUE);
             // CHILD WINDOWS REPOSITION END
+
+            GetWindowRect(hwnd, &rect);
+            iWinWidth = rect.right - rect.left;
+            iWinHeight = rect.bottom - rect.top;
+            iSysWidth = GetSystemMetrics(SM_CXSCREEN);
+            iSysHeight = GetSystemMetrics(SM_CYSCREEN);
+
+            // Set width scrollbar position
+            SetScrollPos(hwndWidthScroll, SB_CTL, (iWinWidth * 100 / iSysWidth), TRUE);
+
+            // Set height scrollbar position
+            SetScrollPos(hwndHeightScroll, SB_CTL, (iWinHeight * 100 / iSysHeight), TRUE);
             break;
 
         case WM_VSCROLL:
@@ -422,14 +445,107 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             break;
 
         case WM_HSCROLL:
-            // Get all the horizontal scroll bar information
+            GetWindowRect(hwnd, &rect);
+            iWinWidth = rect.right - rect.left;
+            iWinHeight = rect.bottom - rect.top;
+            iSysWidth = GetSystemMetrics(SM_CXSCREEN);
+            iSysHeight = GetSystemMetrics(SM_CYSCREEN);
+            if(GetWindowLong((HWND)lParam, GWL_ID) == IDC_BACKGROUND_SCROLL) {
+                si.cbSize = sizeof(si);
+                si.fMask = SIF_ALL;
+                GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
+                x = si.nPos;
+                switch(LOWORD(wParam)) {
+                    case SB_LINELEFT:
+                        si.nPos -= 1;
+                        break;
+                    case SB_LINERIGHT:
+                        si.nPos += 1;
+                        break;
+                    case SB_THUMBPOSITION:
+                        si.nPos = si.nTrackPos;
+                        break;
+                    default:
+                        break;
+                }
+                si.fMask = SIF_POS;
+                color = si.nPos;
+                SetScrollInfo(hwndBackgroundScroll, SB_CTL, &si, TRUE);
+                GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
+                if(si.nPos != x) {
+                    SetScrollPos(hwndBackgroundScroll, SB_CTL, si.nPos, TRUE);
+                }
+                // Set background color
+                HBRUSH brush = CreateSolidBrush(RGB(color, color, color));
+                SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
+                SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                break;
+            }
+
+            if(GetWindowLong((HWND)lParam, GWL_ID) == IDC_WIDTH_SCROLL) {
+                si.cbSize = sizeof(si);
+                si.fMask = SIF_ALL;
+                GetScrollInfo(hwndWidthScroll, SB_CTL, &si);
+                x = si.nPos;
+                switch(LOWORD(wParam)) {
+                    case SB_LINELEFT:
+                        si.nPos -= 1;
+                        break;
+                    case SB_LINERIGHT:
+                        si.nPos += 1;
+                        break;
+                    case SB_THUMBPOSITION:
+                        si.nPos = si.nTrackPos;
+                        break;
+                    default:
+                        break;
+                }
+                si.fMask = SIF_POS;
+                SetScrollInfo(hwndWidthScroll, SB_CTL, &si, TRUE);
+                GetScrollInfo(hwndWidthScroll, SB_CTL, &si);
+                if(si.nPos != x) {
+                    SetScrollPos(hwndWidthScroll, SB_CTL, si.nPos, TRUE);
+                }
+                // Set window width
+                MoveWindow(hwnd, rect.left, rect.top, (si.nPos * iSysWidth / 100), iWinHeight, TRUE);
+                break;
+            }
+
+            if(GetWindowLong((HWND)lParam, GWL_ID) == IDC_HEIGHT_SCROLL) {
+                si.cbSize = sizeof(si);
+                si.fMask = SIF_ALL;
+                GetScrollInfo(hwndHeightScroll, SB_CTL, &si);
+                x = si.nPos;
+                switch(LOWORD(wParam)) {
+                    case SB_LINELEFT:
+                        si.nPos -= 1;
+                        break;
+                    case SB_LINERIGHT:
+                        si.nPos += 1;
+                        break;
+                    case SB_THUMBPOSITION:
+                        si.nPos = si.nTrackPos;
+                        break;
+                    default:
+                        break;
+                }
+                si.fMask = SIF_POS;
+                SetScrollInfo(hwndHeightScroll, SB_CTL, &si, TRUE);
+                GetScrollInfo(hwndHeightScroll, SB_CTL, &si);
+                if(si.nPos != x) {
+                    SetScrollPos(hwndHeightScroll, SB_CTL, si.nPos, TRUE);
+                }
+                // Set window height
+                MoveWindow(hwnd, rect.left, rect.top, iWinWidth, (si.nPos * iSysHeight / 100), TRUE);
+                break;
+            }
+
+            // Get all the vertical scroll bar information
             si.cbSize = sizeof(si);
             si.fMask = SIF_ALL;
             GetScrollInfo(hwnd, SB_HORZ, &si);
-
             // Save the position for later comparison
             x = si.nPos;
-
             switch(LOWORD(wParam)) {
                 case SB_LINELEFT:
                     si.nPos -= 1;
@@ -467,16 +583,13 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             break;
 
         case WM_PAINT:
+            // color = (int)wParam;
             // hdc = BeginPaint(hwnd, &ps);
             // GetClientRect(hwnd, &rect);
-            // // SetBkMode(hdc, TRANSPARENT);
-            // color = GetScrollPos(hwndBackgroundScroll, SB_CTL);
-            // SetTextColor(hdc, RGB(color, color, color));
-            // DrawText(hdc, "Window Background Color", -1, &rect, DT_LEFT | DT_TOP);
-            // DrawText(hdc, "\n(c) Roman Roibu, 2013", -1, &rect, DT_CENTER | DT_TOP);
+            // SetBkMode(hdc, OPAQUE);
+            // SetBkColor(hdc, RGB(color, color, color));
             // EndPaint(hwnd, &ps);
-
-            return DefWindowProc(hwnd, message, wParam, lParam); // Default behaviour for now...
+            return DefWindowProc (hwnd, WM_PAINT, wParam, lParam);
             break;
 
         case WM_DESTROY:

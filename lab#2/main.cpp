@@ -309,8 +309,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             // Add "View" menu, with "Day" and "Night" submenus
             hSubMenu = CreatePopupMenu();
             AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&View");
-            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_DAY, "&Day");
-            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_NIGHT, "&Night");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_DAY, "&Day\tCtrl+D");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_NIGHT, "&Night\tCtrl+N");
 
             // Add "Help" menu, with "About" submenu
             hSubMenu = CreatePopupMenu();
@@ -639,6 +639,55 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     break;
             }
             break;
+
+        case WM_KEYDOWN:
+            GetWindowRect(hwnd, &rect);
+            iWinWidth = rect.right - rect.left;
+            iWinHeight = rect.bottom - rect.top;
+            iSysWidth = GetSystemMetrics(SM_CXSCREEN);
+            iSysHeight = GetSystemMetrics(SM_CYSCREEN);
+
+            // Move window right on Shift + Arrow Right
+            if((wParam == VK_RIGHT)&&(HIBYTE(GetKeyState(VK_SHIFT)) > 1)) {
+                if(rect.left >= iSysWidth - iWinWidth) {
+                    MoveWindow(hwnd, iSysWidth - iWinWidth, rect.top, iWinWidth, iWinHeight, TRUE);
+                }
+                else {
+                    MoveWindow(hwnd, rect.left + 5, rect.top, iWinWidth, iWinHeight, TRUE);
+                }
+                break;
+            }
+            // Move window left on Shift + Arrow Left
+            if((wParam == VK_LEFT)&&(HIBYTE(GetKeyState(VK_SHIFT)) > 1)) {
+                if(rect.left <= 0) {
+                    MoveWindow(hwnd, 0, rect.top, iWinWidth, iWinHeight, TRUE);
+                }
+                else {
+                    MoveWindow(hwnd, rect.left - 5, rect.top, iWinWidth, iWinHeight, TRUE);
+                }
+                break;
+            }
+            // Move window down on Shift + Arrow Down
+            if((wParam == VK_DOWN)&&(HIBYTE(GetKeyState(VK_SHIFT)) > 1)) {
+                if(rect.top >= iSysHeight - iWinHeight) {
+                    MoveWindow(hwnd, rect.left, iSysHeight - iWinHeight, iWinWidth, iWinHeight, TRUE);
+                }
+                else {
+                    MoveWindow(hwnd, rect.left, rect.top + 5, iWinWidth, iWinHeight, TRUE);
+                }
+                break;
+            }
+            // Move window up on Shift + Arrow Up
+            if((wParam == VK_UP)&&(HIBYTE(GetKeyState(VK_SHIFT)) > 1)) {
+                if(rect.top <= 0) {
+                    MoveWindow(hwnd, rect.left, 0, iWinWidth, iWinHeight, TRUE);
+                }
+                else {
+                    MoveWindow(hwnd, rect.left, rect.top - 5, iWinWidth, iWinHeight, TRUE);
+                }
+                break;
+            }
+            return DefWindowProc (hwnd, WM_PAINT, wParam, lParam);
 
         case WM_PAINT:
             return DefWindowProc (hwnd, WM_PAINT, wParam, lParam);

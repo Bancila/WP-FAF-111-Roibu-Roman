@@ -9,6 +9,9 @@
 #define IDC_DAY_BUTTON    104
 #define IDC_NIGHT_BUTTON  105
 
+int iMinWindowHeight = 500;
+int iMinWindowWidth  = 420;
+
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 char szClassName[ ] = "Lab2Class";
@@ -38,9 +41,9 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
         0,
         szClassName,
         "Laboratory Work #2",
-        WS_OVERLAPPEDWINDOW,
+        WS_OVERLAPPEDWINDOW | WS_VSCROLL | WS_HSCROLL,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        400, 500,
+        iMinWindowWidth, iMinWindowHeight,
         HWND_DESKTOP,
         NULL,
         hThisInstance,
@@ -60,6 +63,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     // Child windows' handles
     static HWND hwndListBox;
     static HWND hwndNewItem;
+    static HWND hWndHScroll;
+    static HWND hWndVScroll;
 
     // Size and position variables
     int iWidth  = 60;   // Button width
@@ -72,6 +77,22 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int yListBox       = 10;
     int iListBoxWidth  = 300;
     int iListBoxHeight = 360;
+
+    // Text size
+    int cxChar;
+    int cyChar;
+
+    // Paint and size structs
+    TEXTMETRIC tm;
+    SCROLLINFO si;
+    HDC hdc;
+
+
+    hdc = GetDC(hwnd);
+    GetTextMetrics(hdc, &tm);
+    cxChar = tm.tmAveCharWidth;
+    cyChar = tm.tmHeight;// + tm.tmExternalLeading;
+    ReleaseDC(hwnd, hdc);
 
     switch(message) {
 
@@ -174,6 +195,126 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 (HMENU)IDC_NIGHT_BUTTON,
                 hProgramInstance,
                 NULL);
+            break;
+
+        case WM_SIZE:
+            iWidth  = LOWORD(lParam);
+            iHeight = HIWORD(lParam);
+
+            // Set vertical scroll bar range and page size
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = ((iMinWindowHeight - 50) / cyChar) - 1;
+            si.nPage = iHeight / cyChar;
+            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+            // Set horizontal scroll bar range and page size
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = ((iMinWindowWidth - 20) / cxChar) - 1;
+            si.nPage = iWidth / cxChar;
+            SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
+            break;
+
+        case WM_VSCROLL:
+            // Get all the vertical scroll bar information
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_ALL;
+            GetScrollInfo(hwnd, SB_VERT, &si);
+
+            // Save the position for later comparison
+            y = si.nPos;
+
+            switch(LOWORD(wParam)) {
+                case SB_TOP:
+                    si.nPos = si.nMin;
+                    break;
+
+                case SB_BOTTOM:
+                    si.nPos = si.nMax;
+                    break;
+
+                case SB_LINEUP:
+                    si.nPos -= 1;
+                    break;
+
+                case SB_LINEDOWN:
+                    si.nPos += 1;
+                    break;
+
+                case SB_PAGEUP:
+                    si.nPos -= si.nPage;
+                    break;
+
+                case SB_PAGEDOWN:
+                    si.nPos += si.nPage;
+                    break;
+
+                case SB_THUMBTRACK:
+                    si.nPos = si.nTrackPos;
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Set the position and then retrieve it
+            si.fMask = SIF_POS;
+            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+            GetScrollInfo(hwnd, SB_VERT, &si);
+
+            // If the position has changed, scroll the window and update it
+            if(si.nPos != y) {
+                ScrollWindow(hwnd, 0, cyChar * (y - si.nPos), NULL, NULL);
+                UpdateWindow(hwnd);
+            }
+            break;
+
+        case WM_HSCROLL:
+            // Get all the horizontal scroll bar information
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_ALL;
+            GetScrollInfo(hwnd, SB_HORZ, &si);
+
+            // Save the position for later comparison
+            x = si.nPos;
+
+            switch(LOWORD(wParam)) {
+                case SB_LINELEFT:
+                    si.nPos -= 1;
+                    break;
+
+                case SB_LINERIGHT:
+                    si.nPos += 1;
+                    break;
+
+                case SB_PAGELEFT:
+                    si.nPos -= si.nPage;
+                    break;
+
+                case SB_PAGERIGHT:
+                    si.nPos += si.nPage;
+                    break;
+
+                case SB_THUMBPOSITION:
+                    si.nPos = si.nTrackPos;
+                    break;
+
+                default:
+                    break;
+            }
+            // Set the position and then retrieve it
+            si.fMask = SIF_POS;
+            SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
+            GetScrollInfo(hwnd, SB_HORZ, &si);
+
+            // If the position has changed, scroll the window and update it
+            if(si.nPos != x) {
+                ScrollWindow(hwnd, cxChar * (x - si.nPos), NULL, NULL, 0);
+                UpdateWindow(hwnd);
+            }
             break;
 
         case WM_PAINT:

@@ -9,6 +9,11 @@
 #define IDC_DAY_BUTTON    104
 #define IDC_NIGHT_BUTTON  105
 
+#define IDC_FILE_EXIT     106
+#define IDC_VIEW_DAY      107
+#define IDC_VIEW_NIGHT    108
+#define IDC_HELP_ABOUT    109
+
 int iMinWindowHeight = 500;
 int iMinWindowWidth  = 420;
 
@@ -77,6 +82,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int yListBox       = 10;
     int iListBoxWidth  = 300;
     int iListBoxHeight = 360;
+
+    // Menu & menu items
+    HMENU hMenu;
+    HMENU hSubMenu;
 
     // Text size
     int cxChar;
@@ -195,6 +204,28 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 (HMENU)IDC_NIGHT_BUTTON,
                 hProgramInstance,
                 NULL);
+
+            // Create menu
+            hMenu = CreateMenu();
+
+            // Add "File" menu, with "Exit" submenu
+            hSubMenu = CreatePopupMenu();
+            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&File");
+            AppendMenu(hSubMenu, MF_STRING, IDC_FILE_EXIT, "&Exit");
+
+            // Add "View" menu, with "Day" and "Night" submenus
+            hSubMenu = CreatePopupMenu();
+            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&View");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_DAY, "&Day");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_NIGHT, "&Night");
+
+            // Add "Help" menu, with "About" submenu
+            hSubMenu = CreatePopupMenu();
+            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Help");
+            AppendMenu(hSubMenu, MF_STRING, IDC_HELP_ABOUT, "&About");
+
+            // Set the menu
+            SetMenu(hwnd, hMenu);
             break;
 
         case WM_SIZE:

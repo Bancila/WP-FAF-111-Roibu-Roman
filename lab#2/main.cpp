@@ -14,7 +14,11 @@
 #define IDC_VIEW_NIGHT    108
 #define IDC_HELP_ABOUT    109
 
-int iMinWindowHeight = 500;
+#define IDC_BACKGROUND_SCROLL 110
+#define IDC_HEIGHT_SCROLL     111
+#define IDC_WIDTH_SCROLL      112
+
+int iMinWindowHeight = 610;
 int iMinWindowWidth  = 420;
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -68,8 +72,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     // Child windows' handles
     static HWND hwndListBox;
     static HWND hwndNewItem;
-    static HWND hWndHScroll;
-    static HWND hWndVScroll;
+    static HWND hWndBackgroundScroll;
+    static HWND hWndHeightScroll;
+    static HWND hWndWidthScroll;
 
     // Size and position variables
     int iWidth  = 60;   // Button width
@@ -132,6 +137,45 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 (HMENU)IDC_NEW_ITEM,
                 hProgramInstance,
                 NULL);
+
+            // Create Window background scrollbar
+            y = y + iHeight + 40;
+            hWndBackgroundScroll = CreateWindow(
+                "Scrollbar", 
+                NULL,
+                WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
+                x, y, iListBoxWidth, 10,
+                hwnd,
+                (HMENU)IDC_BACKGROUND_SCROLL,
+                hProgramInstance,
+                NULL);
+            SetScrollRange(hWndBackgroundScroll, SB_CTL, 0, 255, FALSE);
+
+            // Create Window height scrollbar
+            y = y + 10 + 30;
+            hWndHeightScroll = CreateWindow(
+                "Scrollbar", 
+                NULL,
+                WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
+                x, y, iListBoxWidth, 10,
+                hwnd,
+                (HMENU)IDC_HEIGHT_SCROLL,
+                hProgramInstance,
+                NULL);
+            SetScrollRange(hWndHeightScroll, SB_CTL, 0, 100, FALSE);
+
+            // Create Window height scrollbar
+            y = y + 10 + 30;
+            hWndHeightScroll = CreateWindow(
+                "Scrollbar", 
+                NULL,
+                WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
+                x, y, iListBoxWidth, 10,
+                hwnd,
+                (HMENU)IDC_WIDTH_SCROLL,
+                hProgramInstance,
+                NULL);
+            SetScrollRange(hWndWidthScroll, SB_CTL, 0, 100, FALSE);
             
             // Set "Add" button position
             x = xListBox + iListBoxWidth - iWidth;
@@ -236,7 +280,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             si.cbSize = sizeof(si);
             si.fMask = SIF_RANGE | SIF_PAGE;
             si.nMin = 0;
-            si.nMax = ((iMinWindowHeight - 50) / cyChar) - 1;
+            si.nMax = ((iMinWindowHeight - 70) / cyChar);
             si.nPage = iHeight / cyChar;
             SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
@@ -244,7 +288,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             si.cbSize = sizeof(si);
             si.fMask = SIF_RANGE | SIF_PAGE;
             si.nMin = 0;
-            si.nMax = ((iMinWindowWidth - 20) / cxChar) - 1;
+            si.nMax = ((iMinWindowWidth - 20) / cxChar);
             si.nPage = iWidth / cxChar;
             SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
             break;

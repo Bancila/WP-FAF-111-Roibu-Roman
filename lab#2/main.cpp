@@ -18,6 +18,12 @@
 #define IDC_HEIGHT_SCROLL     111
 #define IDC_WIDTH_SCROLL      112
 
+#define IDC_LABEL1            113
+#define IDC_LABEL2            114
+#define IDC_LABEL3            115
+#define IDC_LABEL4            116
+#define IDC_LABEL5            117
+
 int iMinWindowHeight = 610;
 int iMinWindowWidth  = 420;
 
@@ -72,9 +78,19 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     // Child windows' handles
     static HWND hwndListBox;
     static HWND hwndNewItem;
-    static HWND hWndBackgroundScroll;
-    static HWND hWndHeightScroll;
-    static HWND hWndWidthScroll;
+    static HWND hwndAddButton;
+    static HWND hwndRemoveButton;
+    static HWND hwndClearButton;
+    static HWND hwndDayButton;
+    static HWND hwndNightButton;
+    static HWND hwndBackgroundScroll;
+    static HWND hwndHeightScroll;
+    static HWND hwndWidthScroll;
+    static HWND hwndLabel1;
+    static HWND hwndLabel2;
+    static HWND hwndLabel3;
+    static HWND hwndLabel4;
+    static HWND hwndLabel5;
 
     // Size and position variables
     int iWidth  = 60;   // Button width
@@ -97,8 +113,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int cyChar;
 
     // Paint and size structs
+    PAINTSTRUCT ps;
     TEXTMETRIC tm;
     SCROLLINFO si;
+    RECT rect;
+    int color;
     HDC hdc;
 
 
@@ -116,135 +135,152 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 TEXT("ListBox"),
                 NULL,
                 WS_CHILD | WS_VISIBLE | WS_BORDER | LBS_NOTIFY | LBS_WANTKEYBOARDINPUT,
-                xListBox, yListBox,
-                iListBoxWidth, iListBoxHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_LIST_BOX,
                 hProgramInstance,
                 NULL);
-
-            // Set "New Item" position
-            x = xListBox;
-            y = yListBox + iListBoxHeight + 5;
 
             hwndNewItem = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Edit"),
                 TEXT(""),
                 WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL,
-                x, y, (iListBoxWidth - iWidth - 5), iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_NEW_ITEM,
                 hProgramInstance,
                 NULL);
 
-            // Create Window background scrollbar
-            y = y + iHeight + 40;
-            hWndBackgroundScroll = CreateWindow(
+
+            hwndLabel1 = CreateWindowEx(
+                (DWORD)NULL,
+                TEXT("static"),
+                TEXT("Window Background Color"),
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                0, 0, 0, 0, hwnd,
+                (HMENU)IDC_LABEL1,
+                hProgramInstance,
+                NULL);
+
+            hwndLabel2 = CreateWindowEx(
+                (DWORD)NULL,
+                TEXT("static"),
+                TEXT("Window Width"),
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                0, 0, 0, 0, hwnd,
+                (HMENU)IDC_LABEL2,
+                hProgramInstance,
+                NULL);
+
+            hwndLabel3 = CreateWindowEx(
+                (DWORD)NULL,
+                TEXT("static"),
+                TEXT("Window Height"),
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                0, 0, 0, 0,
+                hwnd,
+                (HMENU)IDC_LABEL3,
+                hProgramInstance,
+                NULL);
+
+            hwndLabel4 = CreateWindowEx(
+                (DWORD)NULL,
+                TEXT("static"),
+                TEXT("List"),
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                0, 0, 0, 0,
+                hwnd,
+                (HMENU)IDC_LABEL4,
+                hProgramInstance,
+                NULL);
+
+            hwndLabel5 = CreateWindowEx(
+                (DWORD)NULL,
+                TEXT("static"),
+                TEXT("Mode"),
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                0, 0, 0, 0,
+                hwnd,
+                (HMENU)IDC_LABEL5,
+                hProgramInstance,
+                NULL);
+
+            hwndBackgroundScroll = CreateWindow(
                 "Scrollbar", 
                 NULL,
                 WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
-                x, y, iListBoxWidth, 10,
+                0, 0, 0, 0,
                 hwnd,
                 (HMENU)IDC_BACKGROUND_SCROLL,
                 hProgramInstance,
                 NULL);
-            SetScrollRange(hWndBackgroundScroll, SB_CTL, 0, 255, FALSE);
+            SetScrollRange(hwndBackgroundScroll, SB_CTL, 0, 255, FALSE);
 
-            // Create Window height scrollbar
-            y = y + 10 + 30;
-            hWndHeightScroll = CreateWindow(
+            hwndWidthScroll = CreateWindow(
                 "Scrollbar", 
                 NULL,
                 WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
-                x, y, iListBoxWidth, 10,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_HEIGHT_SCROLL,
                 hProgramInstance,
                 NULL);
-            SetScrollRange(hWndHeightScroll, SB_CTL, 0, 100, FALSE);
+            SetScrollRange(hwndHeightScroll, SB_CTL, 0, 100, FALSE);
 
-            // Create Window height scrollbar
-            y = y + 10 + 30;
-            hWndHeightScroll = CreateWindow(
+            hwndHeightScroll = CreateWindow(
                 "Scrollbar", 
                 NULL,
                 WS_CHILD | WS_VISIBLE | SBS_HORZ | SBS_BOTTOMALIGN,
-                x, y, iListBoxWidth, 10,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_WIDTH_SCROLL,
                 hProgramInstance,
                 NULL);
-            SetScrollRange(hWndWidthScroll, SB_CTL, 0, 100, FALSE);
-            
-            // Set "Add" button position
-            x = xListBox + iListBoxWidth - iWidth;
-            y = yListBox + iListBoxHeight + 5;
+            SetScrollRange(hwndWidthScroll, SB_CTL, 0, 100, FALSE);
 
-            CreateWindowEx(
+            hwndAddButton = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Button"),
                 TEXT("Add"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                x, y, iWidth, iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_ADD_BUTTON,
                 hProgramInstance,
                 NULL);
 
-            // Set "Remove" button position
-            x = xListBox + iListBoxWidth + 10;
-            y = yListBox + 30;
-
-            CreateWindowEx(
+            hwndRemoveButton = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Button"),
                 TEXT("Remove"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                x, y, iWidth, iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_ADD_BUTTON,
                 hProgramInstance,
                 NULL);
-            
-            // Set "Clear" button position
-            y = y + iHeight + 5;
 
-            CreateWindowEx(
+            hwndClearButton = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Button"),
                 TEXT("Clear"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                x, y, iWidth, iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_ADD_BUTTON,
                 hProgramInstance,
                 NULL);
 
-            // Set "Day" button position
-            y = y + (iHeight + 5) + 30;
-
-            CreateWindowEx(
+            hwndDayButton = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Button"),
                 TEXT("Day"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                x, y, iWidth, iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_DAY_BUTTON,
                 hProgramInstance,
                 NULL);
 
-            // Set "Night" button position
-            y = y + iHeight + 5;
-
-            CreateWindowEx(
+            hwndNightButton = CreateWindowEx(
                 (DWORD)NULL,
                 TEXT("Button"),
                 TEXT("Night"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                x, y, iWidth, iHeight,
-                hwnd,
+                0, 0, 0, 0, hwnd,
                 (HMENU)IDC_NIGHT_BUTTON,
                 hProgramInstance,
                 NULL);
@@ -291,6 +327,44 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             si.nMax = ((iMinWindowWidth - 20) / cxChar);
             si.nPage = iWidth / cxChar;
             SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
+
+            // CHILD WINDOWS REPOSITION BEGIN
+            x = xListBox;
+            y = yListBox;
+            iWidth = 60;
+            iHeight = 30;
+            MoveWindow(hwndListBox, x, y, iListBoxWidth, iListBoxHeight, TRUE);
+            y = yListBox + iListBoxHeight + 5;
+            MoveWindow(hwndNewItem, x, y, (iListBoxWidth - iWidth - 5), iHeight, TRUE);
+            y = y + iHeight + 10;
+            MoveWindow(hwndLabel1, x, y, iListBoxWidth, 20, TRUE);
+            y = y + 20;
+            MoveWindow(hwndBackgroundScroll, x, y, iListBoxWidth, 10, TRUE);
+            y = y + 10 + 10;
+            MoveWindow(hwndLabel2, x, y, iListBoxWidth, 20, TRUE);
+            y = y + 20;
+            MoveWindow(hwndWidthScroll, x, y, iListBoxWidth, 10, TRUE);
+            y = y + 10 + 10;
+            MoveWindow(hwndLabel3, x, y, iListBoxWidth, 20, TRUE);
+            y = y + 20;
+            MoveWindow(hwndHeightScroll, x, y, iListBoxWidth, 10, TRUE);
+            x = xListBox + iListBoxWidth - iWidth;
+            y = yListBox + iListBoxHeight + 5;
+            MoveWindow(hwndAddButton, x, y, iWidth, iHeight, TRUE);
+            x = xListBox + iListBoxWidth + 10;
+            y = yListBox;
+            MoveWindow(hwndLabel4, x, y, iWidth, 20, TRUE);
+            y = y + 25;
+            MoveWindow(hwndRemoveButton, x, y, iWidth, iHeight, TRUE);
+            y = y + iHeight + 5;
+            MoveWindow(hwndClearButton, x, y, iWidth, iHeight, TRUE);
+            y = y + (iHeight + 35);
+            MoveWindow(hwndLabel5, x, y, iWidth, 20, TRUE);
+            y = y + 25;
+            MoveWindow(hwndDayButton, x, y, iWidth, iHeight, TRUE);
+            y = y + iHeight + 5;
+            MoveWindow(hwndNightButton, x, y, iWidth, iHeight, TRUE);
+            // CHILD WINDOWS REPOSITION END
             break;
 
         case WM_VSCROLL:
@@ -393,7 +467,15 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             break;
 
         case WM_PAINT:
-            // TODO: Re-position all child windows, with the reference of listbox
+            // hdc = BeginPaint(hwnd, &ps);
+            // GetClientRect(hwnd, &rect);
+            // // SetBkMode(hdc, TRANSPARENT);
+            // color = GetScrollPos(hwndBackgroundScroll, SB_CTL);
+            // SetTextColor(hdc, RGB(color, color, color));
+            // DrawText(hdc, "Window Background Color", -1, &rect, DT_LEFT | DT_TOP);
+            // DrawText(hdc, "\n(c) Roman Roibu, 2013", -1, &rect, DT_CENTER | DT_TOP);
+            // EndPaint(hwnd, &ps);
+
             return DefWindowProc(hwnd, message, wParam, lParam); // Default behaviour for now...
             break;
 

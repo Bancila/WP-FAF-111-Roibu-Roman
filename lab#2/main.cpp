@@ -106,7 +106,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int x;
     int y;
 
-    float iUnit;
+    int i;
 
     // ListBox size and initial position
     int xListBox       = 10;
@@ -121,6 +121,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     // Text size
     int cxChar;
     int cyChar;
+
+    // String
+    char* szText;
+    int iTextLength;
 
     // Paint and size structs
     PWINDOWINFO pwi;
@@ -264,7 +268,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 TEXT("Remove"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
                 0, 0, 0, 0, hwnd,
-                (HMENU)IDC_ADD_BUTTON,
+                (HMENU)IDC_REMOVE_BUTTON,
                 hProgramInstance,
                 NULL);
 
@@ -274,7 +278,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 TEXT("Clear"),
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
                 0, 0, 0, 0, hwnd,
-                (HMENU)IDC_ADD_BUTTON,
+                (HMENU)IDC_CLEAR_BUTTON,
                 hProgramInstance,
                 NULL);
 
@@ -586,13 +590,32 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
+                case IDC_LIST_BOX:
+                    switch (HIWORD(wParam)) {
+                        case LBN_DBLCLK:
+                            MessageBox(NULL, TEXT("ListBox  Double-Clicked!"), TEXT("Double-Click!"), MB_OK);
+                            break;
+                    }
+                    break;
+
                 case IDC_ADD_BUTTON:
+                    iTextLength = SendMessage(hwndNewItem, WM_GETTEXTLENGTH, 0, 0);
+                    szText = (char*)malloc(iTextLength+1);
+                    SendMessage(hwndNewItem, WM_GETTEXT, iTextLength+1, (LPARAM)szText);
+                    SendMessage(hwndListBox, LB_ADDSTRING, 0, (LPARAM)szText);
+                    SendMessage(hwndNewItem, WM_SETTEXT, 0, (LPARAM)"");
+                    free(szText);
                     break;
 
                 case IDC_REMOVE_BUTTON:
+                    i = SendMessage(hwndListBox, LB_GETCURSEL, 0, 0);
+                    if(i != LB_ERR) {
+                        SendMessage(hwndListBox, LB_DELETESTRING, i, 0);
+                    }
                     break;
 
                 case IDC_CLEAR_BUTTON:
+                    SendMessage(hwndListBox, LB_RESETCONTENT, 0, 0);
                     break;
 
                 case IDC_DAY_BUTTON:

@@ -42,9 +42,9 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
     wincl.lpfnWndProc = WindowProcedure;
     wincl.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
     wincl.cbSize = sizeof (WNDCLASSEX);
-    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
-    wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
-    wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wincl.hIcon = LoadIcon (NULL, IDI_EXCLAMATION);
+    wincl.hIconSm = LoadIcon (NULL, IDI_EXCLAMATION);
+    wincl.hCursor = LoadCursor (NULL, IDC_HAND);
     wincl.lpszMenuName = NULL;
     wincl.cbClsExtra = 0;
     wincl.cbWndExtra = 0;

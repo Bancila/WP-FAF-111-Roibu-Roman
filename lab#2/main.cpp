@@ -310,8 +310,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             // Add "View" menu, with "Day" and "Night" submenus
             hSubMenu = CreatePopupMenu();
             AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&View");
-            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_DAY, "&Day\tCtrl+D");
-            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_NIGHT, "&Night\tCtrl+N");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_DAY, "&Day");
+            AppendMenu(hSubMenu, MF_STRING, IDC_VIEW_NIGHT, "&Night");
 
             // Add "Help" menu, with "About" submenu
             hSubMenu = CreatePopupMenu();

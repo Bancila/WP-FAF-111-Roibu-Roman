@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <stdlib.h>
+#include "resource.h"
 
 #define IDC_LIST_BOX            100
 #define IDC_NEW_ITEM            101
@@ -28,6 +28,7 @@
 int iMinWindowHeight = 610;
 int iMinWindowWidth  = 420;
 
+BOOL CALLBACK DialogProcedure(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 char szClassName[ ] = "Lab2Class";
@@ -75,7 +76,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
     return messages.wParam;
 }
 
-LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     // Child windows' handles
     static HWND hwndListBox;
     static HWND hwndNewItem;
@@ -92,8 +93,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     static HWND hwndLabel3;
     static HWND hwndLabel4;
     static HWND hwndLabel5;
-
-    LONG id;
 
     // Size and position variables
     int iSysWidth;
@@ -127,8 +126,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     int iTextLength;
 
     // Paint and size structs
-    PWINDOWINFO pwi;
-    PAINTSTRUCT ps;
     TEXTMETRIC tm;
     SCROLLINFO si;
     HBRUSH brush;
@@ -140,7 +137,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     hdc = GetDC(hwnd);
     GetTextMetrics(hdc, &tm);
     cxChar = tm.tmAveCharWidth;
-    cyChar = tm.tmHeight;// + tm.tmExternalLeading;
+    cyChar = tm.tmHeight;
     ReleaseDC(hwnd, hdc);
 
     switch(message) {
@@ -484,7 +481,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 // Set background color
                 brush = CreateSolidBrush(RGB(color, color, color));
                 SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
-                SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                SendMessage(hwnd, WM_SIZE, 0, 0);
                 break;
             }
 
@@ -583,7 +580,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
             // If the position has changed, scroll the window and update it
             if(si.nPos != x) {
-                ScrollWindow(hwnd, cxChar * (x - si.nPos), NULL, NULL, 0);
+                ScrollWindow(hwnd, cxChar * (x - si.nPos), 0, NULL, 0);
                 UpdateWindow(hwnd);
             }
             break;
@@ -627,7 +624,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
                     si.nPos = 255;
                     SetScrollInfo(hwndBackgroundScroll, SB_CTL, &si, TRUE);
-                    SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                    SendMessage(hwnd, WM_SIZE, 0, 0);
                     break;
 
                 case IDC_NIGHT_BUTTON:
@@ -639,11 +636,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     GetScrollInfo(hwndBackgroundScroll, SB_CTL, &si);
                     si.nPos = 0;
                     SetScrollInfo(hwndBackgroundScroll, SB_CTL, &si, TRUE);
-                    SendMessage(hwnd, WM_SIZE, NULL, NULL);
+                    SendMessage(hwnd, WM_SIZE, 0, 0);
                     break;
 
                 case IDC_FILE_EXIT:
-                    SendMessage(hwnd, WM_DESTROY, NULL, NULL);
+                    SendMessage(hwnd, WM_DESTROY, 0, 0);
                     break;
 
                 case IDC_VIEW_DAY:
@@ -655,6 +652,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     break;
 
                 case IDC_HELP_ABOUT:
+                    return DialogBox(hProgramInstance, MAKEINTRESOURCE(IDD_ABOUT), NULL, (DLGPROC)DialogProcedure);
                     break;
 
                 default:
@@ -725,5 +723,28 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     }
 
     return 0;
+}
+
+BOOL CALLBACK DialogProcedure(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch(uMsg) {
+        case WM_INITDIALOG:
+            return TRUE;
+
+
+        case WM_CLOSE:
+            EndDialog(hwndDlg, 0);
+            return TRUE;
+
+        case WM_COMMAND:
+            switch(LOWORD(wParam)) {
+                case IDOK:
+                case IDCANCEL:
+                    EndDialog(hwndDlg, 0);
+                    return TRUE;
+            }
+            break;
+    }
+    return FALSE;
 }
 

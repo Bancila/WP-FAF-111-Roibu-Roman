@@ -43,9 +43,9 @@ Result Application
 ------------------
 This is a screen shot of the application's window and dialogbox in the virtual Windows 8 environment:
 
-![Window screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%231/pictures/window_screen.png)
+![Window screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%232/pictures/window_screen.png)
 
-![Dialogbox screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%231/pictures/dialog_screen.png)
+![Dialogbox screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%232/pictures/dialog_screen.png)
 
 Building is tricky
 ------------------
@@ -53,7 +53,7 @@ Since I've done almost all my development in my MacOS environment, I have all my
 However, to make sure that the DialogBox works properly, the application should be built in a Windows environment, inside a CodeBlocks project. 
 The file tree of the project is provided. 
 
-![Project file tree](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%231/pictures/filetree.png)
+![Project file tree](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%232/pictures/filetree.png)
 
 As long as this hierarchy is ensured, without any modifications made to the files (main.cpp, resource.h, resource.rc), the project should build properly, and the dialog box should work as expected. 
 The screenshots prove the above statement.

@@ -78,6 +78,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static RECT drawingArea = {160, 17, 760, 410};
 
     // Drawing states
+    static POINT startPen;
+
     static BOOL drawingLineNow;
     static POINT newLine;
 
@@ -301,6 +303,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
                 xMouse = point.x;
                 yMouse = point.y;
+                // If Pen tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
+                    startPen.x = xMouse;
+                    startPen.y = yMouse;
+                }
                 // If Line tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndLineTool) == BST_CHECKED)) {
                     newLine.x = xMouse;
@@ -487,7 +494,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
                 // If Pen tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
-                    SetPixel(hdc, xMouse, yMouse, strokeRGB);
+                    strokePen = CreatePen(PS_SOLID, 1, strokeRGB);
+                    SelectObject(hdc, strokePen);
+                    MoveToEx(hdc, xMouse, yMouse, NULL);
+                    LineTo(hdc, startPen.x, startPen.y);
+                    DeleteObject(strokePen);
+                    startPen.x = xMouse;
+                    startPen.y = yMouse;
                 }
                 // If Eraser tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndEraserTool) == BST_CHECKED)) {

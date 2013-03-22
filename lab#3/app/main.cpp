@@ -88,6 +88,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
     static BOOL drawingBezierFirst;
     static BOOL drawingBezierSecond;
+    static BOOL drawingBezierThird;
+    static POINT bezierPoints[4];
 
     // Mouse variables
     int xMouse, yMouse;
@@ -301,6 +303,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     newEllipse.top = yMouse;
                     drawingEllipseNow = true;
                 }
+                // If Bezier tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndBezierTool) == BST_CHECKED)) {
+                    bezierPoints[0] = point;
+                    drawingBezierFirst  = true;
+                    drawingBezierSecond = false;
+                    drawingBezierThird  = false;
+                }
             }
             return 0;
 
@@ -356,6 +365,14 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
                 drawingEllipseNow = false;
             }
+
+            if(drawingBezierFirst) {
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                bezierPoints[1] = point;
+                drawingBezierFirst  = false;
+                drawingBezierSecond = true;
+                drawingBezierThird  = false;
+            }
             return 0;
 
         case WM_RBUTTONDOWN:
@@ -388,6 +405,43 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 return 0;
+            }
+
+            if((xMouse > drawingArea.left)&&(xMouse < drawingArea.right)&&(yMouse > drawingArea.top)&&(yMouse < drawingArea.bottom)) {
+                stroke_weight = getWeight(hwndStrokeWeight);
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                xMouse = point.x;
+                yMouse = point.y;
+
+                // If Bezier tool is selected & first half is selected
+                if((wParam == MK_RBUTTON)&&(Button_GetCheck(hwndBezierTool) == BST_CHECKED)&&(drawingBezierSecond)) {
+                    bezierPoints[2] = point;
+                    drawingBezierFirst  = false;
+                    drawingBezierSecond = false;
+                    drawingBezierThird  = true;
+                }
+            }
+            return 0;
+
+        case WM_RBUTTONUP:
+            xMouse = GET_X_LPARAM(lParam);
+            yMouse = GET_Y_LPARAM(lParam);
+            strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
+            fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
+            stroke_weight = getWeight(hwndStrokeWeight);
+            point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+            xMouse = point.x;
+            yMouse = point.y;
+
+            if(drawingBezierThird) {
+                bezierPoints[3] = point;
+                strokePen = CreatePen(PS_SOLID, stroke_weight, strokeRGB);
+                SelectObject(hdc, strokePen);
+                PolyBezier(hdc, bezierPoints, 4);
+                DeleteObject(strokePen);
+                drawingBezierFirst  = false;
+                drawingBezierSecond = false;
+                drawingBezierThird  = false;
             }
             return 0;
 

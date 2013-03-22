@@ -1,13 +1,14 @@
 #include <windows.h>
+#include <windowsx.h>
 
 #define IDW_DRAWING_AREA    100
 
-#define IDB_PEN_TOOL        101
-#define IDB_LINE_TOOL       102
-#define IDB_POLYGON_TOOL    103
-#define IDB_ELLIPSE_TOOL    104
-#define IDB_BEZIER_TOOL     105
-#define IDB_ERASER_TOOL     106
+#define IDB_PEN_TOOL        110
+#define IDB_LINE_TOOL       111
+#define IDB_POLYGON_TOOL    112
+#define IDB_ELLIPSE_TOOL    113
+#define IDB_BEZIER_TOOL     114
+#define IDB_ERASER_TOOL     115
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
@@ -62,6 +63,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndStrokeWeight;
     static HWND hwndDrawArea;
 
+    // Mouse variables
+    int xMouse, yMouse;
+
     // Color variabes
     UINT fillRED      = 255;
     UINT fillGREEN    = 255;
@@ -78,9 +82,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     int yStrokePreview = 277;
 
     // Color picker rectangles
-    RECT rectRED     = {25, 342, 79, 353};
-    RECT rectGREEN   = {25, 362, 79, 373};
-    RECT rectBLUE    = {25, 382, 79, 393};
+    RECT rectRED     = {25, 342, 133, 353};
+    RECT rectGREEN   = {25, 362, 133, 373};
+    RECT rectBLUE    = {25, 382, 133, 393};
     RECT rectTemp;
 
     // Painting stuff
@@ -209,10 +213,33 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
-
                 default:
                     DefWindowProc(hwnd, WM_COMMAND, wParam, lParam);
                     break;
+            }
+            break;
+
+        case WM_LBUTTONDOWN:
+            xMouse = GET_X_LPARAM(lParam); 
+            yMouse = GET_Y_LPARAM(lParam);
+
+            // Check if colopikers clicked
+            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
+                // If RED colorpicker
+                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
+                    MessageBox(NULL, TEXT("RED colorpicker"), TEXT("RED"), MB_OK);
+                    break;
+                }
+                // If GREEN colorpicker
+                if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
+                    MessageBox(NULL, TEXT("GREEN colorpicker"), TEXT("GREEN"), MB_OK);
+                    break;
+                }
+                // If BLUE colorpicker
+                if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
+                    MessageBox(NULL, TEXT("BLUE colorpicker"), TEXT("BLUE"), MB_OK);
+                    break;
+                }
             }
             break;
 
@@ -239,7 +266,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 int r;
                 r = i * 255 / (rectRED.right - rectRED.left);
                 rectTemp.left  = rectRED.left  + i;
-                rectTemp.right = rectRED.right + i + 1;
+                rectTemp.right = rectRED.left + i + 1;
                 hBrush = CreateSolidBrush(RGB(r, 0, 0));
                 FillRect(hdc, &rectTemp, hBrush);
                 DeleteObject(hBrush);
@@ -252,7 +279,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 int g;
                 g = i * 255 / (rectGREEN.right - rectGREEN.left);
                 rectTemp.left  = rectGREEN.left  + i;
-                rectTemp.right = rectGREEN.right + i + 1;
+                rectTemp.right = rectGREEN.left + i + 1;
                 hBrush = CreateSolidBrush(RGB(0, g, 0));
                 FillRect(hdc, &rectTemp, hBrush);
                 DeleteObject(hBrush);
@@ -265,7 +292,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 int b;
                 b = i * 255 / (rectBLUE.right - rectBLUE.left);
                 rectTemp.left  = rectBLUE.left  + i;
-                rectTemp.right = rectBLUE.right + i + 1;
+                rectTemp.right = rectBLUE.left + i + 1;
                 hBrush = CreateSolidBrush(RGB(0, 0, b));
                 FillRect(hdc, &rectTemp, hBrush);
                 DeleteObject(hBrush);

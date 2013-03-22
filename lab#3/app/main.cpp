@@ -11,6 +11,7 @@
 #define IDB_ERASER_TOOL     115
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
+void updateColorPreview(HDC hdc, COLORREF rgb, int xLeft, int yTop);
 
 char szClassName[ ] = "Lab3Class";
 HINSTANCE hInstance;
@@ -62,6 +63,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndEraserWeight;
     static HWND hwndStrokeWeight;
     static HWND hwndDrawArea;
+    static HWND hwndPenTool;
 
     // Mouse variables
     int xMouse, yMouse;
@@ -87,7 +89,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     RECT rectBLUE    = {25, 382, 133, 393};
     RECT rectTemp;
 
+    // Getting the drawing area
+    RECT drawingArea;
+    GetClientRect(hwndDrawArea, &drawingArea);
+
     // Painting stuff
+    COLORREF strokeRGB;
+    COLORREF fillRGB;
     PAINTSTRUCT ps;
     RECT rect;
     HDC hdc;
@@ -102,10 +110,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 hwnd, 0, hInstance, NULL);
 
             // Pen tool
-            CreateWindowEx(0, "Button", "Pen",
+            hwndPenTool = CreateWindowEx(0, "Button", "Pen",
                 WS_VISIBLE | WS_CHILD | WS_GROUP | BS_AUTORADIOBUTTON,
                 10, 30, 80, 20,
                 hwnd, (HMENU)IDB_PEN_TOOL, hInstance, NULL);
+            Button_SetCheck(hwndPenTool, BST_CHECKED);
 
             // Line tool
             CreateWindowEx(0, "Button", "Line",
@@ -209,7 +218,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 WS_VISIBLE | WS_CHILD | WS_BORDER | SS_WHITERECT, 
                 160, 17, 585, 393,
                 hwnd, (HMENU)IDW_DRAWING_AREA, hInstance, NULL);
-            break;
+            return 0;
 
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
@@ -217,47 +226,103 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     DefWindowProc(hwnd, WM_COMMAND, wParam, lParam);
                     break;
             }
-            break;
+            return 0;
 
         case WM_LBUTTONDOWN:
             xMouse = GET_X_LPARAM(lParam); 
             yMouse = GET_Y_LPARAM(lParam);
 
-            // Check if colopikers clicked
+            // Check if colopikers clicked, set stroke colors
             if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
+                hdc = GetDC(hwnd);
+                strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
+
                 // If RED colorpicker
                 if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
-                    MessageBox(NULL, TEXT("RED colorpicker"), TEXT("RED"), MB_OK);
-                    break;
+                    strokeRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                    strokeGREEN = GetGValue(strokeRGB);
+                    strokeBLUE = GetBValue(strokeRGB);
+                    updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If GREEN colorpicker
-                if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
-                    MessageBox(NULL, TEXT("GREEN colorpicker"), TEXT("GREEN"), MB_OK);
-                    break;
+                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
+                    strokeRED = GetRValue(strokeRGB);
+                    strokeGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    strokeBLUE = GetBValue(strokeRGB);
+                    updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If BLUE colorpicker
-                if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
-                    MessageBox(NULL, TEXT("BLUE colorpicker"), TEXT("BLUE"), MB_OK);
-                    break;
+                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
+                    strokeRED = GetRValue(strokeRGB);
+                    strokeGREEN = GetGValue(strokeRGB);
+                    strokeBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
+                return 0;
             }
-            break;
+            return 0;
+
+        case WM_RBUTTONDOWN:
+            xMouse = GET_X_LPARAM(lParam); 
+            yMouse = GET_Y_LPARAM(lParam);
+
+            // Check if colopikers clicked, set fill colors
+            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
+                hdc = GetDC(hwnd);
+                fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
+
+                // If RED colorpicker
+                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
+                    fillRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                    fillGREEN = GetGValue(fillRGB);
+                    fillBLUE = GetBValue(fillRGB);
+                    updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
+                }
+                // If GREEN colorpicker
+                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
+                    fillRED = GetRValue(fillRGB);
+                    fillGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    fillBLUE = GetBValue(fillRGB);
+                    updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
+                }
+                // If BLUE colorpicker
+                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
+                    fillRED = GetRValue(fillRGB);
+                    fillGREEN = GetGValue(fillRGB);
+                    fillBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
+                }
+                return 0;
+            }
+            return 0;
+
+        case WM_MOUSEMOVE:
+            xMouse = GET_X_LPARAM(lParam); 
+            yMouse = GET_Y_LPARAM(lParam);
+            
+            // Check if on the drawing area 160, 17, 585, 393
+            if((xMouse > 160)&&(xMouse < 160 + drawingArea.right)
+                &&(yMouse > 17)&&(yMouse < 17 + drawingArea.bottom)) {
+                strokeRGB = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
+                fillRGB   = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
+                hdc = GetDC(hwndDrawArea);
+
+                // If Pen tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
+                    SetPixel(hdc, xMouse - 160, yMouse - 17, strokeRGB);
+                }
+                break;
+            }
+            return 0;
 
         case WM_PAINT:
             hdc = BeginPaint(hwnd, &ps);
 
             // Fill color preview rectangle
-            hBrush = CreateSolidBrush(RGB(fillRED, fillGREEN, fillBLUE));
-            SelectObject(hdc, hBrush);
-            Rectangle(hdc, xFillPreview, yFillPreview, xFillPreview+45, yFillPreview+45);
-            DeleteObject(hBrush);
-
+            updateColorPreview(hdc, RGB(255, 255, 255), xFillPreview, yFillPreview);
 
             // Stroke color preview rectangle
-            hBrush = CreateSolidBrush(RGB(strokeRED, strokeGREEN, strokeBLUE));
-            SelectObject(hdc, hBrush);
-            Rectangle(hdc, xStrokePreview, yStrokePreview, xStrokePreview+45, yStrokePreview+45);
-            DeleteObject(hBrush);
+            updateColorPreview(hdc, RGB(0, 0, 0), xStrokePreview, yStrokePreview);
 
             // RED color picker
             rectTemp.top    = rectRED.top;
@@ -297,17 +362,23 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 FillRect(hdc, &rectTemp, hBrush);
                 DeleteObject(hBrush);
             }
-
-            EndPaint(hwnd, &ps);
-            break;
+            EndPaint(hwnd, &ps); // End main window DC paint
+            return 0;
 
         case WM_DESTROY:
             PostQuitMessage (0);
-            break;
+            return 0;
 
         default:
             return DefWindowProc (hwnd, message, wParam, lParam);
     }
 
     return 0;
+}
+
+void updateColorPreview(HDC hdc, COLORREF rgb, int xLeft, int yTop) {
+    HBRUSH hBrush = CreateSolidBrush(rgb);
+    SelectObject(hdc, hBrush);
+    Rectangle(hdc, xLeft, yTop, xLeft + 45, yTop + 45);
+    DeleteObject(hBrush);
 }

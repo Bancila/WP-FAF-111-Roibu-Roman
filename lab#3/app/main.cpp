@@ -14,6 +14,8 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void updateColorPreview(HDC, COLORREF, int, int);
 int getWeight(HWND);
 POINT adjustDrawLimits(int, int, RECT, int);
+HRGN getLastEllipticRegion(RECT, int, BOOL*);
+HRGN getLastRectRegion(RECT, int, BOOL*);
 
 char szClassName[ ] = "Lab3Class";
 HINSTANCE hInstance;
@@ -64,7 +66,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     // Child windows' handles
     static HWND hwndEraserWeight;
     static HWND hwndStrokeWeight;
-    // static HWND hwndDrawArea;
     static HWND hwndPenTool;
     static HWND hwndLineTool;
     static HWND hwndPolygonTool;
@@ -90,6 +91,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static BOOL drawingBezierSecond;
     static BOOL drawingBezierThird;
     static POINT bezierPoints[4];
+
+    static HRGN lastRegion;
+    static BOOL canDeleteRegion;
 
     // Mouse variables
     int xMouse, yMouse;
@@ -125,6 +129,14 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     HPEN strokePen;
     POINT point;
     RECT rect;
+
+    // Logo stuff
+    HDC hdcMem;
+    BITMAP bitmap;
+    HGDIOBJ oldBitmap;
+    HBITMAP hbmpFAFLogo = NULL;
+    hbmpFAFLogo = (HBITMAP)LoadImage(hInstance, "faf_logo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    GetObject(hbmpFAFLogo, sizeof(bitmap), &bitmap);
 
     switch(message) {
 
@@ -237,6 +249,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 WS_VISIBLE | WS_CHILD | SS_LEFT,
                 10, 380, 10, 20,
                 hwnd, (HMENU)0, hInstance, NULL);
+
+            // FAF Logo
+            hbmpFAFLogo = (HBITMAP)LoadImage(hInstance, "faf_logo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+        
             return 0;
 
         case WM_COMMAND:
@@ -311,6 +327,16 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     drawingBezierThird  = false;
                 }
             }
+            rect.left = drawingArea.right - bitmap.bmWidth;
+            rect.right = drawingArea.right;
+            rect.top = drawingArea.bottom - bitmap.bmHeight;
+            rect.bottom = drawingArea.bottom;
+            // Delete FAF logo with Ctr + Shift + Click on logo area
+            if((canDeleteRegion)&&(wParam & MK_CONTROL && wParam & MK_SHIFT)) {
+                InvalidateRgn(hwnd, lastRegion, TRUE);
+                DeleteObject(lastRegion);
+                canDeleteRegion = false;
+            }
             return 0;
 
         case WM_LBUTTONUP:
@@ -347,6 +373,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 DeleteObject(strokePen);
                 DeleteObject(fillBrush);
 
+                lastRegion = getLastRectRegion(newPolygon, stroke_weight, &canDeleteRegion);
+
                 drawingPolygonNow = false;
             }
 
@@ -362,6 +390,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 Ellipse(hdc, newEllipse.left, newEllipse.top, newEllipse.right, newEllipse.bottom);
                 DeleteObject(strokePen);
                 DeleteObject(fillBrush);
+
+                lastRegion = getLastEllipticRegion(newEllipse, stroke_weight, &canDeleteRegion);
 
                 drawingEllipseNow = false;
             }
@@ -465,13 +495,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
                     xMouse = point.x;
                     yMouse = point.y;
-                    // strokePen = CreatePen(PS_SOLID, 1, RGB(255,255,255));
-                    // fillBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
-                    // SelectObject(hdc, strokePen);
-                    // SelectObject(hdc, fillBrush);
-                    // Rectangle(hdc, point.x - (stroke_weight/2), point.y + (stroke_weight/2), point.x + (stroke_weight/2), point.y + (stroke_weight/2));
-                    // DeleteObject(strokePen);
-                    // DeleteObject(fillBrush);
                     rect.left = point.x - (stroke_weight/2);
                     rect.right = point.x + (stroke_weight/2);
                     rect.top = point.y - (stroke_weight/2);
@@ -480,7 +503,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     SendMessage(hwnd, WM_PAINT, 0, 0);
                     ValidateRect(hwnd, &rect);
                 }
-                break;
             }
             return 0;
 
@@ -537,6 +559,20 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             SelectObject(hdc, (HBRUSH)GetStockObject(WHITE_BRUSH));
             Rectangle(hdc, drawingArea.left, drawingArea.top, drawingArea.right, drawingArea.bottom);
 
+            // Draw FAF logo
+            hdcMem = CreateCompatibleDC(hdc);
+            SelectObject(hdcMem, hbmpFAFLogo);
+
+            // Copy the bits from the memory DC into the current dc
+            BitBlt(hdc,
+                drawingArea.right - bitmap.bmWidth - 1,
+                drawingArea.bottom - bitmap.bmHeight - 1,
+                bitmap.bmWidth, bitmap.bmHeight,
+                hdcMem, 0, 0, SRCCOPY);
+
+            // Restore the old bitmap
+            DeleteDC(hdcMem);
+
             EndPaint(hwnd, &ps); // End main window DC paint
             return 0;
 
@@ -586,6 +622,26 @@ POINT adjustDrawLimits(int xMouse, int yMouse, RECT limit, int stroke) {
         result.y = limit.bottom - stroke;
     } else result.y = yMouse;
 
+    return result;
+}
+
+HRGN getLastEllipticRegion(RECT rect, int stroke, BOOL* flag) {
+    HRGN result = CreateEllipticRgn(
+        rect.left - (stroke / 2) - 1,
+        rect.top - (stroke / 2) - 1,
+        rect.right + (stroke / 2) + 1,
+        rect.bottom + (stroke / 2) + 1);
+    *flag = TRUE;
+    return result;
+}
+
+HRGN getLastRectRegion(RECT rect, int stroke, BOOL* flag) {
+    HRGN result = CreateRectRgn(
+        rect.left - (stroke / 2) - 1,
+        rect.top - (stroke / 2) - 1,
+        rect.right + (stroke / 2) + 1,
+        rect.bottom + (stroke / 2) + 1);
+    *flag = TRUE;
     return result;
 }
 

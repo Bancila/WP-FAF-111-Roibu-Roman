@@ -459,6 +459,27 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
                     SetPixel(hdc, xMouse, yMouse, strokeRGB);
                 }
+                // If Eraser tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndEraserTool) == BST_CHECKED)) {
+                    stroke_weight = getWeight(hwndEraserWeight);
+                    point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                    xMouse = point.x;
+                    yMouse = point.y;
+                    // strokePen = CreatePen(PS_SOLID, 1, RGB(255,255,255));
+                    // fillBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+                    // SelectObject(hdc, strokePen);
+                    // SelectObject(hdc, fillBrush);
+                    // Rectangle(hdc, point.x - (stroke_weight/2), point.y + (stroke_weight/2), point.x + (stroke_weight/2), point.y + (stroke_weight/2));
+                    // DeleteObject(strokePen);
+                    // DeleteObject(fillBrush);
+                    rect.left = point.x - (stroke_weight/2);
+                    rect.right = point.x + (stroke_weight/2);
+                    rect.top = point.y - (stroke_weight/2);
+                    rect.bottom = point.y + (stroke_weight/2);
+                    InvalidateRect(hwnd, &rect, FALSE);
+                    SendMessage(hwnd, WM_PAINT, 0, 0);
+                    ValidateRect(hwnd, &rect);
+                }
                 break;
             }
             return 0;

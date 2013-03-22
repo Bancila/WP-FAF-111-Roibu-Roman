@@ -11,7 +11,8 @@
 #define IDB_ERASER_TOOL     115
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
-void updateColorPreview(HDC hdc, COLORREF rgb, int xLeft, int yTop);
+void updateColorPreview(HDC, COLORREF, int, int);
+int getWeight(HWND);
 
 char szClassName[ ] = "Lab3Class";
 HINSTANCE hInstance;
@@ -64,9 +65,25 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndStrokeWeight;
     static HWND hwndDrawArea;
     static HWND hwndPenTool;
+    static HWND hwndLineTool;
+    static HWND hwndPolygonTool;
+    static HWND hwndEllipseTool;
+    static HWND hwndBezierTool;
+    static HWND hwndEraserTool;
+    static HWND hwndFillCheck;
+
+    // Drawing states
+    static BOOL drawingPolygonNow;
+    static RECT newPolygon;
+
+    static BOOL drawingEllipseNow;
+    static RECT newEllipse;
+
+    static BOOL drawingBezierFirst;
+    static BOOL drawingBezierSecond;
 
     // Mouse variables
-    int xMouse, yMouse;
+    int xWindowMouse, yWindowMouse, xDrawMouse, yDrawMouse;
 
     // Color variabes
     UINT fillRED      = 255;
@@ -96,7 +113,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     // Painting stuff
     COLORREF strokeRGB;
     COLORREF fillRGB;
+    HBRUSH fillBrush;
     PAINTSTRUCT ps;
+    HPEN strokePen;
     RECT rect;
     HDC hdc;
 
@@ -117,31 +136,31 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             Button_SetCheck(hwndPenTool, BST_CHECKED);
 
             // Line tool
-            CreateWindowEx(0, "Button", "Line",
+            hwndLineTool = CreateWindowEx(0, "Button", "Line",
                 WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                 10, 50, 80, 20,
                 hwnd, (HMENU)IDB_LINE_TOOL, hInstance, NULL);
 
             // Polygon tool
-            CreateWindowEx(0, "Button", "Polygon",
+            hwndPolygonTool = CreateWindowEx(0, "Button", "Polygon",
                 WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                 10, 70, 80, 20,
                 hwnd, (HMENU)IDB_POLYGON_TOOL, hInstance, NULL);
 
             // Ellipse tool
-            CreateWindowEx(0, "Button", "Ellipse",
+            hwndEllipseTool = CreateWindowEx(0, "Button", "Ellipse",
                 WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                 10, 90, 80, 20,
                 hwnd, (HMENU)IDB_ELLIPSE_TOOL, hInstance, NULL);
 
             // Bezier tool
-            CreateWindowEx(0, "Button", "Bezier",
+            hwndBezierTool = CreateWindowEx(0, "Button", "Bezier",
                 WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                 10, 110, 80, 20,
                 hwnd, (HMENU)IDB_BEZIER_TOOL, hInstance, NULL);
 
             // Eraser tool
-            CreateWindowEx(0, "Button", "Eraser",
+            hwndEraserTool = CreateWindowEx(0, "Button", "Eraser",
                 WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                 10, 140, 80, 20,
                 hwnd, (HMENU)IDB_ERASER_TOOL, hInstance, NULL);
@@ -159,7 +178,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 hwnd, 0, hInstance, NULL);
 
             // Fill checkbox
-            CreateWindowEx(0, "Button", "Fill",
+            hwndFillCheck = CreateWindowEx(0, "Button", "Fill",
                 WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
                 10, 200, 50, 20,
                 hwnd, (HMENU)0, hInstance, NULL);
@@ -229,67 +248,107 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_LBUTTONDOWN:
-            xMouse = GET_X_LPARAM(lParam); 
-            yMouse = GET_Y_LPARAM(lParam);
+            xWindowMouse = GET_X_LPARAM(lParam);
+            yWindowMouse = GET_Y_LPARAM(lParam);
+            xDrawMouse = xWindowMouse - 160;
+            yDrawMouse = yWindowMouse - 17;
 
             // Check if colopikers clicked, set stroke colors
-            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
+            if((xWindowMouse > rectRED.left)&&(xWindowMouse <= rectRED.right)) {
                 hdc = GetDC(hwnd);
                 strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
 
                 // If RED colorpicker
-                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
-                    strokeRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                if((yWindowMouse > rectRED.top)&&(yWindowMouse <= rectRED.bottom)) {
+                    strokeRED = (xWindowMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
                     strokeGREEN = GetGValue(strokeRGB);
                     strokeBLUE = GetBValue(strokeRGB);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If GREEN colorpicker
-                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
+                else if((yWindowMouse > rectGREEN.top)&&(yWindowMouse <= rectGREEN.bottom)) {
                     strokeRED = GetRValue(strokeRGB);
-                    strokeGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    strokeGREEN = (xWindowMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
                     strokeBLUE = GetBValue(strokeRGB);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If BLUE colorpicker
-                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
+                else if((yWindowMouse > rectBLUE.top)&&(yWindowMouse <= rectBLUE.bottom)) {
                     strokeRED = GetRValue(strokeRGB);
                     strokeGREEN = GetGValue(strokeRGB);
-                    strokeBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    strokeBLUE = (xWindowMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 return 0;
             }
+
+            // Check if on the drawing area 160, 17, 585, 393
+            if((xWindowMouse > 160)&&(xWindowMouse < 160 + drawingArea.right)
+                &&(yWindowMouse > 17)&&(yWindowMouse < 17 + drawingArea.bottom)) {
+                // If Polygon tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPolygonTool) == BST_CHECKED)) {
+                    newPolygon.left = xDrawMouse;
+                    newPolygon.top = yDrawMouse;
+                    drawingPolygonNow = true;
+                }
+            }
+            return 0;
+
+        case WM_LBUTTONUP:
+            xWindowMouse = GET_X_LPARAM(lParam);
+            yWindowMouse = GET_Y_LPARAM(lParam);
+            xDrawMouse = xWindowMouse - 160;
+            yDrawMouse = yWindowMouse - 17;
+            strokeRGB = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
+            fillRGB = GetPixel(GetDC(hwnd), xFillPreview + 20, yFillPreview + 20);
+
+            if(drawingPolygonNow) {
+                newPolygon.right = xDrawMouse;
+                newPolygon.bottom = yDrawMouse;
+
+                hdc = GetDC(hwndDrawArea);
+                strokePen = CreatePen(PS_SOLID, getWeight(hwndStrokeWeight), strokeRGB);
+                fillBrush = (Button_GetCheck(hwndFillCheck) == BST_CHECKED)? CreateSolidBrush(fillRGB) : (HBRUSH)GetStockObject(NULL_BRUSH);
+                SelectObject(hdc, strokePen);
+                SelectObject(hdc, fillBrush);
+                Rectangle(hdc, newPolygon.left, newPolygon.top, newPolygon.right, newPolygon.bottom);
+                DeleteObject(strokePen);
+                DeleteObject(fillBrush);
+
+                drawingPolygonNow = false;
+            }
             return 0;
 
         case WM_RBUTTONDOWN:
-            xMouse = GET_X_LPARAM(lParam); 
-            yMouse = GET_Y_LPARAM(lParam);
+            xWindowMouse = GET_X_LPARAM(lParam); 
+            yWindowMouse = GET_Y_LPARAM(lParam);
+            xDrawMouse = xWindowMouse - 160;
+            yDrawMouse = yWindowMouse - 17;
 
             // Check if colopikers clicked, set fill colors
-            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
+            if((xWindowMouse > rectRED.left)&&(xWindowMouse <= rectRED.right)) {
                 hdc = GetDC(hwnd);
                 fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
 
                 // If RED colorpicker
-                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
-                    fillRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                if((yWindowMouse > rectRED.top)&&(yWindowMouse <= rectRED.bottom)) {
+                    fillRED = (xWindowMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
                     fillGREEN = GetGValue(fillRGB);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If GREEN colorpicker
-                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
+                else if((yWindowMouse > rectGREEN.top)&&(yWindowMouse <= rectGREEN.bottom)) {
                     fillRED = GetRValue(fillRGB);
-                    fillGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    fillGREEN = (xWindowMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If BLUE colorpicker
-                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
+                else if((yWindowMouse > rectBLUE.top)&&(yWindowMouse <= rectBLUE.bottom)) {
                     fillRED = GetRValue(fillRGB);
                     fillGREEN = GetGValue(fillRGB);
-                    fillBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    fillBLUE = (xWindowMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 return 0;
@@ -297,19 +356,21 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_MOUSEMOVE:
-            xMouse = GET_X_LPARAM(lParam); 
-            yMouse = GET_Y_LPARAM(lParam);
-            
+            xWindowMouse = GET_X_LPARAM(lParam); 
+            yWindowMouse = GET_Y_LPARAM(lParam);
+            xDrawMouse = xWindowMouse - 160;
+            yDrawMouse = yWindowMouse - 17;
+
             // Check if on the drawing area 160, 17, 585, 393
-            if((xMouse > 160)&&(xMouse < 160 + drawingArea.right)
-                &&(yMouse > 17)&&(yMouse < 17 + drawingArea.bottom)) {
+            if((xWindowMouse > 160)&&(xWindowMouse < 160 + drawingArea.right)
+                &&(yWindowMouse > 17)&&(yWindowMouse < 17 + drawingArea.bottom)) {
                 strokeRGB = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
                 fillRGB   = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
                 hdc = GetDC(hwndDrawArea);
 
                 // If Pen tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
-                    SetPixel(hdc, xMouse - 160, yMouse - 17, strokeRGB);
+                    SetPixel(hdc, xDrawMouse, yDrawMouse, strokeRGB);
                 }
                 break;
             }
@@ -382,3 +443,17 @@ void updateColorPreview(HDC hdc, COLORREF rgb, int xLeft, int yTop) {
     Rectangle(hdc, xLeft, yTop, xLeft + 45, yTop + 45);
     DeleteObject(hBrush);
 }
+
+int getWeight(HWND input) {
+    int result;
+    int iLength = SendMessage(input, WM_GETTEXTLENGTH, 0, 0);
+    char* szText = (char*)malloc(iLength+1);
+    SendMessage(input, WM_GETTEXT, iLength+1, (LPARAM)szText);
+    result = atoi(szText);
+    _itoa(result, szText, 10);
+    SendMessage(input, WM_SETTEXT, 0, (LPARAM)szText);
+    free(szText);
+    return result;
+}
+
+

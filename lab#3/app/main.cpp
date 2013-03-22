@@ -295,6 +295,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     newPolygon.top = yMouse;
                     drawingPolygonNow = true;
                 }
+                // If Ellipse tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndEllipseTool) == BST_CHECKED)) {
+                    newEllipse.left = xMouse;
+                    newEllipse.top = yMouse;
+                    drawingEllipseNow = true;
+                }
             }
             return 0;
 
@@ -334,6 +340,22 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
                 drawingPolygonNow = false;
             }
+
+            if(drawingEllipseNow) {
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                newEllipse.right = point.x;
+                newEllipse.bottom = point.y;
+
+                strokePen = CreatePen(PS_SOLID, stroke_weight, strokeRGB);
+                fillBrush = (Button_GetCheck(hwndFillCheck) == BST_CHECKED)? CreateSolidBrush(fillRGB) : (HBRUSH)GetStockObject(NULL_BRUSH);
+                SelectObject(hdc, strokePen);
+                SelectObject(hdc, fillBrush);
+                Ellipse(hdc, newEllipse.left, newEllipse.top, newEllipse.right, newEllipse.bottom);
+                DeleteObject(strokePen);
+                DeleteObject(fillBrush);
+
+                drawingEllipseNow = false;
+            }
             return 0;
 
         case WM_RBUTTONDOWN:
@@ -345,21 +367,21 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
 
                 // If RED colorpicker
-                if((xMouse > rectRED.top)&&(xMouse <= rectRED.bottom)) {
+                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
                     fillRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
                     fillGREEN = GetGValue(fillRGB);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If GREEN colorpicker
-                else if((xMouse > rectGREEN.top)&&(xMouse <= rectGREEN.bottom)) {
+                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
                     fillRED = GetRValue(fillRGB);
                     fillGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If BLUE colorpicker
-                else if((xMouse > rectBLUE.top)&&(xMouse <= rectBLUE.bottom)) {
+                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
                     fillRED = GetRValue(fillRGB);
                     fillGREEN = GetGValue(fillRGB);
                     fillBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);

@@ -13,6 +13,7 @@
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void updateColorPreview(HDC, COLORREF, int, int);
 int getWeight(HWND);
+POINT adjustDrawLimits(int, int, RECT, int);
 
 char szClassName[ ] = "Lab3Class";
 HINSTANCE hInstance;
@@ -43,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
         "Laboratory Work #3",
         (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX),
         CW_USEDEFAULT, CW_USEDEFAULT,
-        760, 445,
+        778, 445,
         HWND_DESKTOP,
         NULL,
         hThisInstance,
@@ -63,7 +64,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     // Child windows' handles
     static HWND hwndEraserWeight;
     static HWND hwndStrokeWeight;
-    static HWND hwndDrawArea;
+    // static HWND hwndDrawArea;
     static HWND hwndPenTool;
     static HWND hwndLineTool;
     static HWND hwndPolygonTool;
@@ -72,7 +73,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndEraserTool;
     static HWND hwndFillCheck;
 
+    // Drawing area rect
+    static RECT drawingArea = {160, 17, 760, 410};
+
     // Drawing states
+    static BOOL drawingLineNow;
+    static POINT newLine;
+
     static BOOL drawingPolygonNow;
     static RECT newPolygon;
 
@@ -83,7 +90,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static BOOL drawingBezierSecond;
 
     // Mouse variables
-    int xWindowMouse, yWindowMouse, xDrawMouse, yDrawMouse;
+    int xMouse, yMouse;
 
     // Color variabes
     UINT fillRED      = 255;
@@ -106,18 +113,16 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     RECT rectBLUE    = {25, 382, 133, 393};
     RECT rectTemp;
 
-    // Getting the drawing area
-    RECT drawingArea;
-    GetClientRect(hwndDrawArea, &drawingArea);
-
     // Painting stuff
+    HDC hdc = GetDC(hwnd);
     COLORREF strokeRGB;
+    int stroke_weight;
     COLORREF fillRGB;
     HBRUSH fillBrush;
     PAINTSTRUCT ps;
     HPEN strokePen;
+    POINT point;
     RECT rect;
-    HDC hdc;
 
     switch(message) {
 
@@ -230,13 +235,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 WS_VISIBLE | WS_CHILD | SS_LEFT,
                 10, 380, 10, 20,
                 hwnd, (HMENU)0, hInstance, NULL);
-
-            // Drawing area
-            hwndDrawArea = CreateWindowEx(0,
-                "Static", "",
-                WS_VISIBLE | WS_CHILD | WS_BORDER | SS_WHITERECT, 
-                160, 17, 585, 393,
-                hwnd, (HMENU)IDW_DRAWING_AREA, hInstance, NULL);
             return 0;
 
         case WM_COMMAND:
@@ -248,66 +246,85 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_LBUTTONDOWN:
-            xWindowMouse = GET_X_LPARAM(lParam);
-            yWindowMouse = GET_Y_LPARAM(lParam);
-            xDrawMouse = xWindowMouse - 160;
-            yDrawMouse = yWindowMouse - 17;
+            xMouse = GET_X_LPARAM(lParam);
+            yMouse = GET_Y_LPARAM(lParam);
 
             // Check if colopikers clicked, set stroke colors
-            if((xWindowMouse > rectRED.left)&&(xWindowMouse <= rectRED.right)) {
-                hdc = GetDC(hwnd);
+            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
                 strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
 
                 // If RED colorpicker
-                if((yWindowMouse > rectRED.top)&&(yWindowMouse <= rectRED.bottom)) {
-                    strokeRED = (xWindowMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                if((yMouse > rectRED.top)&&(yMouse <= rectRED.bottom)) {
+                    strokeRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
                     strokeGREEN = GetGValue(strokeRGB);
                     strokeBLUE = GetBValue(strokeRGB);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If GREEN colorpicker
-                else if((yWindowMouse > rectGREEN.top)&&(yWindowMouse <= rectGREEN.bottom)) {
+                else if((yMouse > rectGREEN.top)&&(yMouse <= rectGREEN.bottom)) {
                     strokeRED = GetRValue(strokeRGB);
-                    strokeGREEN = (xWindowMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    strokeGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
                     strokeBLUE = GetBValue(strokeRGB);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 // If BLUE colorpicker
-                else if((yWindowMouse > rectBLUE.top)&&(yWindowMouse <= rectBLUE.bottom)) {
+                else if((yMouse > rectBLUE.top)&&(yMouse <= rectBLUE.bottom)) {
                     strokeRED = GetRValue(strokeRGB);
                     strokeGREEN = GetGValue(strokeRGB);
-                    strokeBLUE = (xWindowMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    strokeBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
                     updateColorPreview(hdc, RGB(strokeRED, strokeGREEN, strokeBLUE), xStrokePreview, yStrokePreview);
                 }
                 return 0;
             }
 
-            // Check if on the drawing area 160, 17, 585, 393
-            if((xWindowMouse > 160)&&(xWindowMouse < 160 + drawingArea.right)
-                &&(yWindowMouse > 17)&&(yWindowMouse < 17 + drawingArea.bottom)) {
+            // Check if on the drawing area
+            if((xMouse > drawingArea.left)&&(xMouse < drawingArea.right)&&(yMouse > drawingArea.top)&&(yMouse < drawingArea.bottom)) {
+                stroke_weight = getWeight(hwndStrokeWeight);
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                xMouse = point.x;
+                yMouse = point.y;
+                // If Line tool is selected
+                if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndLineTool) == BST_CHECKED)) {
+                    newLine.x = xMouse;
+                    newLine.y = yMouse;
+                    drawingLineNow = true;
+                }
                 // If Polygon tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPolygonTool) == BST_CHECKED)) {
-                    newPolygon.left = xDrawMouse;
-                    newPolygon.top = yDrawMouse;
+                    newPolygon.left = xMouse;
+                    newPolygon.top = yMouse;
                     drawingPolygonNow = true;
                 }
             }
             return 0;
 
         case WM_LBUTTONUP:
-            xWindowMouse = GET_X_LPARAM(lParam);
-            yWindowMouse = GET_Y_LPARAM(lParam);
-            xDrawMouse = xWindowMouse - 160;
-            yDrawMouse = yWindowMouse - 17;
-            strokeRGB = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
-            fillRGB = GetPixel(GetDC(hwnd), xFillPreview + 20, yFillPreview + 20);
+            xMouse = GET_X_LPARAM(lParam);
+            yMouse = GET_Y_LPARAM(lParam);
+            strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
+            fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
+            stroke_weight = getWeight(hwndStrokeWeight);
+            
+            if(drawingLineNow) {
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                xMouse = point.x;
+                yMouse = point.y;
+
+                strokePen = CreatePen(PS_SOLID, stroke_weight, strokeRGB);
+                SelectObject(hdc, strokePen);
+                MoveToEx(hdc, xMouse, yMouse, NULL);
+                LineTo(hdc, newLine.x, newLine.y);
+                DeleteObject(strokePen);
+
+                drawingLineNow = false;
+            }
 
             if(drawingPolygonNow) {
-                newPolygon.right = xDrawMouse;
-                newPolygon.bottom = yDrawMouse;
+                point = adjustDrawLimits(xMouse, yMouse, drawingArea, stroke_weight);
+                newPolygon.right = point.x;
+                newPolygon.bottom = point.y;
 
-                hdc = GetDC(hwndDrawArea);
-                strokePen = CreatePen(PS_SOLID, getWeight(hwndStrokeWeight), strokeRGB);
+                strokePen = CreatePen(PS_SOLID, stroke_weight, strokeRGB);
                 fillBrush = (Button_GetCheck(hwndFillCheck) == BST_CHECKED)? CreateSolidBrush(fillRGB) : (HBRUSH)GetStockObject(NULL_BRUSH);
                 SelectObject(hdc, strokePen);
                 SelectObject(hdc, fillBrush);
@@ -320,35 +337,32 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_RBUTTONDOWN:
-            xWindowMouse = GET_X_LPARAM(lParam); 
-            yWindowMouse = GET_Y_LPARAM(lParam);
-            xDrawMouse = xWindowMouse - 160;
-            yDrawMouse = yWindowMouse - 17;
+            xMouse = GET_X_LPARAM(lParam); 
+            yMouse = GET_Y_LPARAM(lParam);
 
             // Check if colopikers clicked, set fill colors
-            if((xWindowMouse > rectRED.left)&&(xWindowMouse <= rectRED.right)) {
-                hdc = GetDC(hwnd);
+            if((xMouse > rectRED.left)&&(xMouse <= rectRED.right)) {
                 fillRGB = GetPixel(hdc, xFillPreview + 20, yFillPreview + 20);
 
                 // If RED colorpicker
-                if((yWindowMouse > rectRED.top)&&(yWindowMouse <= rectRED.bottom)) {
-                    fillRED = (xWindowMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
+                if((xMouse > rectRED.top)&&(xMouse <= rectRED.bottom)) {
+                    fillRED = (xMouse - rectRED.left) * 255 / (rectRED.right - rectRED.left);
                     fillGREEN = GetGValue(fillRGB);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If GREEN colorpicker
-                else if((yWindowMouse > rectGREEN.top)&&(yWindowMouse <= rectGREEN.bottom)) {
+                else if((xMouse > rectGREEN.top)&&(xMouse <= rectGREEN.bottom)) {
                     fillRED = GetRValue(fillRGB);
-                    fillGREEN = (xWindowMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
+                    fillGREEN = (xMouse - rectGREEN.left) * 255 / (rectGREEN.right - rectGREEN.left);
                     fillBLUE = GetBValue(fillRGB);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 // If BLUE colorpicker
-                else if((yWindowMouse > rectBLUE.top)&&(yWindowMouse <= rectBLUE.bottom)) {
+                else if((xMouse > rectBLUE.top)&&(xMouse <= rectBLUE.bottom)) {
                     fillRED = GetRValue(fillRGB);
                     fillGREEN = GetGValue(fillRGB);
-                    fillBLUE = (xWindowMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
+                    fillBLUE = (xMouse - rectBLUE.left) * 255 / (rectBLUE.right - rectBLUE.left);
                     updateColorPreview(hdc, RGB(fillRED, fillGREEN, fillBLUE), xFillPreview, yFillPreview);
                 }
                 return 0;
@@ -356,21 +370,18 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_MOUSEMOVE:
-            xWindowMouse = GET_X_LPARAM(lParam); 
-            yWindowMouse = GET_Y_LPARAM(lParam);
-            xDrawMouse = xWindowMouse - 160;
-            yDrawMouse = yWindowMouse - 17;
+            xMouse = GET_X_LPARAM(lParam); 
+            yMouse = GET_Y_LPARAM(lParam);
 
-            // Check if on the drawing area 160, 17, 585, 393
-            if((xWindowMouse > 160)&&(xWindowMouse < 160 + drawingArea.right)
-                &&(yWindowMouse > 17)&&(yWindowMouse < 17 + drawingArea.bottom)) {
-                strokeRGB = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
-                fillRGB   = GetPixel(GetDC(hwnd), xStrokePreview + 20, yStrokePreview + 20);
-                hdc = GetDC(hwndDrawArea);
+            // Check if on the drawing area
+            if((xMouse > drawingArea.left)&&(xMouse < drawingArea.right)
+                &&(yMouse > drawingArea.top)&&(yMouse < drawingArea.bottom)) {
+                strokeRGB = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
+                fillRGB   = GetPixel(hdc, xStrokePreview + 20, yStrokePreview + 20);
 
                 // If Pen tool is selected
                 if((wParam == MK_LBUTTON)&&(Button_GetCheck(hwndPenTool) == BST_CHECKED)) {
-                    SetPixel(hdc, xDrawMouse, yDrawMouse, strokeRGB);
+                    SetPixel(hdc, xMouse, yMouse, strokeRGB);
                 }
                 break;
             }
@@ -423,6 +434,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 FillRect(hdc, &rectTemp, hBrush);
                 DeleteObject(hBrush);
             }
+
+            // Blank draw area
+            SelectObject(hdc, CreatePen(PS_SOLID, 1, RGB(0,0,0)));
+            SelectObject(hdc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            Rectangle(hdc, drawingArea.left, drawingArea.top, drawingArea.right, drawingArea.bottom);
+
             EndPaint(hwnd, &ps); // End main window DC paint
             return 0;
 
@@ -455,5 +472,25 @@ int getWeight(HWND input) {
     free(szText);
     return result;
 }
+
+POINT adjustDrawLimits(int xMouse, int yMouse, RECT limit, int stroke) {
+    POINT result;
+    stroke = stroke / 2 + 1;
+
+    if(xMouse - stroke < limit.left) {
+        result.x = limit.left + stroke;
+    } else if(xMouse + stroke > limit.right) {
+        result.x = limit.right - stroke;
+    } else result.x = xMouse;
+
+    if(yMouse - stroke < limit.top) {
+        result.y = limit.top + stroke;
+    } else if(yMouse + stroke > limit.bottom) {
+        result.y = limit.bottom - stroke;
+    } else result.y = yMouse;
+
+    return result;
+}
+
 
 

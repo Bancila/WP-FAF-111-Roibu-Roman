@@ -43,7 +43,7 @@ First of all, I made wireframe models of the application's window and dialogbox,
 
 Result Application
 ------------------
-This is a screen shot of the application's window and dialogbox in the virtual Windows 8 environment:
+This is a screen shot of the application's window in my native Mac OS X enviroment, running the app using [Wine](http://www.winehq.org/).
 
 ![Window screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%233/screens/screenshot.png)
 

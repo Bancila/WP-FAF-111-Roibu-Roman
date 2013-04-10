@@ -199,9 +199,19 @@ void set_game_map(int iLifeFormIndex) {
     for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++) gameMap[i][j] = lifeforms[iLifeFormIndex].map[i][j];
 }
 
-void update_game_map() {
+bool update_game_map() {
+    // Returns true if gameMap is different than previousMap
+    // If they are the same, the game should stop
+
     for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++) previousMap[i][j] = gameMap[i][j];
     for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++) gameMap[i][j] = dead_or_alive(i, j);
+    
+    // If at least 1 difference, return true
+    for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++)
+        if(gameMap[i][j] != previousMap[i][j]) return true;
+
+    // If no difference found, return false
+    return false;
 }
 
 void draw_game_map(HWND hwnd, RECT gameArea) {

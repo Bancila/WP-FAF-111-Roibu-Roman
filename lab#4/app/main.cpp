@@ -72,7 +72,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     switch(message) {
 
         case WM_CREATE:
-
             // Life form group box
             CreateWindowEx(0, "Button", "Life Form",
                 WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
@@ -139,6 +138,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 SendMessage(hwndLifeForms, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)lifeforms[i].szLabel);
             }
 
+            // Set timer
+            SetTimer(hwnd, 301, 50, NULL);
+
             // Set game booleans
             drawLifeForms = false;
             gameOn = false;
@@ -179,11 +181,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     break;
 
                 case IDB_STARTBTN:
+                    gameOn = true;
                     EnableWindow(hwndStartBtn, FALSE);
                     EnableWindow(hwndStopBtn, TRUE);
                     break;
 
                 case IDB_STOPBTN:
+                    gameOn = false;
                     EnableWindow(hwndStopBtn, FALSE);
                     EnableWindow(hwndStartBtn, TRUE);
                     break;
@@ -199,6 +203,19 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             yMouse = GET_Y_LPARAM(lParam);
 
             return 0;
+        case WM_TIMER:
+            if(gameOn) {
+                // Update game map
+                if(update_game_map()) {
+                    // Draw game map, if changes to the map have been made
+                    draw_game_map(hwnd, gameArea);
+                }
+                else {
+                    // If map is static, stop the execution
+                    SendMessage(hwnd, WM_COMMAND, (WPARAM)IDB_STOPBTN, (LPARAM)0);
+                }
+            }
+            break;
 
         case WM_PAINT:
             hdc = BeginPaint(hwnd, &ps);

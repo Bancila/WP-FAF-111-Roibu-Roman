@@ -2,6 +2,8 @@
 #include <windowsx.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 
 #define IDC_LIFEFORMS   100
 #define IDB_SETBTN      101
@@ -27,12 +29,19 @@ LFORM lifeforms[] = {
     0, 0, NULL, "Draw Some!"
 };
 
+COLORREF colors[] = {
+    RGB(255, 255, 102), RGB(49, 158, 161), RGB(255, 148, 90), RGB(209, 74, 137), RGB(158, 10, 57),
+    RGB(64, 94, 0), RGB(104, 152, 100), RGB(255, 101, 1), RGB(160, 183, 218), RGB(51, 103, 153),
+    RGB(255, 198, 41), RGB(139, 119, 181), RGB(255, 123, 41), RGB(0, 130, 182), RGB(255, 33, 81)
+};
+
 // In-Game settings
 static bool** previousMap = NULL;
 static bool** gameMap = NULL;
 static int gameSquares = 0;
 static int gamePixel = 0;
 static int gameSpeed = 10; /* int from 10 to 100 */
+static bool addColor;
 
 void game_of_life_initialize() {
     int i, j;
@@ -223,8 +232,14 @@ bool update_game_map() {
 
 void draw_game_pixel(HWND hwnd, RECT gameArea, int i, int j) {
     HDC hdc = GetDC(hwnd);
-    SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    HBRUSH hBrush;
+    srand(time(NULL));
+    int r = rand() % 15;
+    if(addColor) hBrush = CreateSolidBrush(colors[r]);
+    else hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    SelectObject(hdc, hBrush);
     Rectangle(hdc, (10 + j * gamePixel), (10 + i * gamePixel), (10 + (j+1) * gamePixel), (10 + (i+1) * gamePixel));
+    DeleteObject(hBrush);
     ReleaseDC(hwnd, hdc);
 }
 

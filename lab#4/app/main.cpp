@@ -53,6 +53,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndStartBtn;
     static HWND hwndStopBtn;
     static HWND hwndSpeed;
+    static HWND hwndColor;
 
     static bool gameOn;
     static bool drawLifeForms;
@@ -107,6 +108,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                 530, 215, 150, 25,
                 hwnd, (HMENU)IDB_STOPBTN, hInstance, NULL);
+
+            // Color checkbox
+            hwndColor = CreateWindowEx(0, "Button", "Color",
+                WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                530, 245, 150, 20,
+                hwnd, (HMENU)0, hInstance, NULL);
 
             // Speed title label
             CreateWindow("Static", "Speed:",
@@ -243,6 +250,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_TIMER:
+            addColor = (Button_GetCheck(hwndColor) == BST_CHECKED);
             if((gameOn)&&(wParam == ID_TIMER)) {
                 // Update game map
                 if(update_game_map()) {

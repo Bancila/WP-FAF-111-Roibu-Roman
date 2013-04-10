@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include "main.h"
 
 #define IDC_LIFEFORMS   100
 #define IDB_SETBTN      101
@@ -131,6 +132,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 WS_VISIBLE | WS_CHILD | SS_CENTER,
                 530, 370, 150, 120,
                 hwnd, 0, hInstance, NULL);
+
+            // Add lifeforms to combo-box
+            for(int i = 0; i < NUMLIFEFORMS; i++) {
+                SendMessage(hwndLifeForms, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)lifeforms[i].szLabel);
+            }
             return 0;
 
         case WM_COMMAND:

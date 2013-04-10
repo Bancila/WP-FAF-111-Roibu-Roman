@@ -1,5 +1,3 @@
-#include <windows.h>
-#include <windowsx.h>
 #include "main.h"
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -64,6 +62,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     int xMouse;
     int yMouse;
 
+    char text[10];
+
     PAINTSTRUCT ps;
     HPEN hPEN;
     RECT gameArea = {11, 11, 509, 509};
@@ -115,7 +115,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 hwnd, 0, hInstance, NULL);
 
             // Speed value label
-            hwndSpeed = CreateWindow("Static", "100%",
+            hwndSpeed = CreateWindow("Static", "10%",
                 WS_VISIBLE | WS_CHILD | SS_RIGHT,
                 630, 280, 50, 20,
                 hwnd, 0, hInstance, NULL);
@@ -138,8 +138,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 SendMessage(hwndLifeForms, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)lifeforms[i].szLabel);
             }
 
-            // Set timer
-            SetTimer(hwnd, 301, 50, NULL);
+            // Set initial timer
+            SetTimer(hwnd, ID_TIMER, (10000 / gameSpeed), NULL);
 
             // Set game booleans
             drawLifeForms = false;
@@ -218,8 +218,32 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             }
             return 0;
 
+        case WM_MOUSEWHEEL:
+            // Break if speed is MAX or MIN
+
+            if(GET_WHEEL_DELTA_WPARAM(wParam) < 0) {
+                // wheel rotated forward, away from user
+                if(gameSpeed < 100) gameSpeed += 10;
+                else return 0;
+            }
+            else {
+                // wheel rotated backward, toward user
+                if(gameSpeed > 10) gameSpeed -= 10;
+                else return 0;
+            }
+
+            // Delete old timer, and create new timer
+            KillTimer(hwnd, ID_TIMER);
+            SetTimer(hwnd, ID_TIMER, (10000 / gameSpeed), NULL);
+
+            // Update speed label
+            sprintf(text, "%i", gameSpeed);
+            strcat(text, "%");
+            SendMessage(hwndSpeed, WM_SETTEXT, (WPARAM)0, (LPARAM)text);
+            return 0;
+
         case WM_TIMER:
-            if(gameOn) {
+            if((gameOn)&&(wParam == ID_TIMER)) {
                 // Update game map
                 if(update_game_map()) {
                     // Draw game map, if changes to the map have been made

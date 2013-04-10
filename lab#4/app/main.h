@@ -1,7 +1,13 @@
+#include <windows.h>
+#include <windowsx.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #define IDC_LIFEFORMS   100
 #define IDB_SETBTN      101
 #define IDB_STARTBTN    102
 #define IDB_STOPBTN     103
+#define ID_TIMER        104
 
 #define NUMLIFEFORMS ((int) (sizeof lifeforms / sizeof lifeforms[0]))
 
@@ -26,6 +32,7 @@ static bool** previousMap = NULL;
 static bool** gameMap = NULL;
 static int gameSquares = 0;
 static int gamePixel = 0;
+static int gameSpeed = 10; /* int from 10 to 100 */
 
 void game_of_life_initialize() {
     int i, j;

@@ -1,6 +1,11 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#define IDC_LIFEFORMS   100
+#define IDB_SETBTN      101
+#define IDB_STARTBTN    102
+#define IDB_STOPBTN     103
+
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 char szClassName[ ] = "Lab4Class";
@@ -32,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
         "Game of Life",
         (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX),
         CW_USEDEFAULT, CW_USEDEFAULT,
-        778, 445,
+        705, 545,
         HWND_DESKTOP,
         NULL,
         hThisInstance,
@@ -49,13 +54,83 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    static HWND hwndLifeForms;
+    static HWND hwndSetBtn;
+    static HWND hwndStartBtn;
+    static HWND hwndStopBtn;
+    static HWND hwndSpeed;
+
     int xMouse;
     int yMouse;
+
+    HDC hdc;
+    PAINTSTRUCT ps;
+    HPEN hPEN;
 
     switch(message) {
 
         case WM_CREATE:
 
+            // Life form group box
+            CreateWindowEx(0, "Button", "Life Form",
+                WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                520, 40, 170, 90,
+                hwnd, 0, hInstance, NULL);
+
+            // LIFEFORMS combobox
+            hwndLifeForms = CreateWindow("ComboBox", "", 
+                CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+                530, 65, 150, 25,
+                hwnd, (HMENU)IDC_LIFEFORMS, hInstance, NULL);
+
+            // SET button
+            hwndSetBtn = CreateWindow("Button", "Set",
+                WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                530, 95, 150, 25,
+                hwnd, (HMENU)IDB_SETBTN, hInstance, NULL);
+
+            // Animation group box
+            CreateWindowEx(0, "Button", "Animation",
+                WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                520, 160, 170, 150,
+                hwnd, 0, hInstance, NULL);
+
+            // START button
+            hwndStartBtn = CreateWindow("Button", "Start",
+                WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                530, 185, 150, 25,
+                hwnd, (HMENU)IDB_STARTBTN, hInstance, NULL);
+
+            // STOP button
+            hwndStopBtn = CreateWindow("Button", "Start",
+                WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                530, 215, 150, 25,
+                hwnd, (HMENU)IDB_STOPBTN, hInstance, NULL);
+
+            // Speed title label
+            CreateWindow("Static", "Speed:",
+                WS_VISIBLE | WS_CHILD,
+                530, 280, 50, 20,
+                hwnd, 0, hInstance, NULL);
+
+            // Speed value label
+            hwndSpeed = CreateWindow("Static", "100%",
+                WS_VISIBLE | WS_CHILD | SS_RIGHT,
+                630, 280, 50, 20,
+                hwnd, 0, hInstance, NULL);
+
+            // About group box
+            CreateWindowEx(0, "Button", "About",
+                WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                520, 340, 170, 170,
+                hwnd, 0, hInstance, NULL);
+
+            // About text label
+            CreateWindow("Static",
+                TEXT("\"Game Of Life\"\n\nWindows Programming\nLaboratory #4\n\n(c) Roman Roibu"),
+                WS_VISIBLE | WS_CHILD | SS_CENTER,
+                530, 370, 150, 120,
+                hwnd, 0, hInstance, NULL);
             return 0;
 
         case WM_COMMAND:
@@ -73,7 +148,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_PAINT:
-
+            hdc = BeginPaint(hwnd, &ps);
+            hPEN = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+            SelectObject(hdc, hPEN);
+            SelectObject(hdc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            Rectangle(hdc, 10, 10, 510, 510);
+            DeleteObject(hPEN);
+            EndPaint(hwnd, &ps);
             return 0;
 
         case WM_DESTROY:

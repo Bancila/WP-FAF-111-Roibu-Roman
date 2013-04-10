@@ -57,6 +57,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndSpeed;
 
     static bool gameOn;
+    static bool drawLifeForms;
 
     int iLifeFormIndex;
 
@@ -66,7 +67,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     PAINTSTRUCT ps;
     HPEN hPEN;
     RECT gameArea = {11, 11, 509, 509};
-    HDC hdc = GetDC(hwnd);
+    HDC hdc;
 
     switch(message) {
 
@@ -138,7 +139,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 SendMessage(hwndLifeForms, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)lifeforms[i].szLabel);
             }
 
-            // Set game boolean
+            // Set game booleans
+            drawLifeForms = false;
             gameOn = false;
 
             // Init Game settings
@@ -149,48 +151,21 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             switch (LOWORD(wParam)) {
                 case IDB_SETBTN:
 
-                    // Clear drawing area
-                    FillRect(hdc, &gameArea, (HBRUSH)(WHITE_BRUSH));
-
                     // Get selected life form index
                     iLifeFormIndex = SendMessage(hwndLifeForms, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
                     
-                    // Free last maps
-                    if(gameMap)     for(int i=0; i<gameSquares; i++) free(gameMap[i]);     free(gameMap);
-                    if(previousMap) for(int i=0; i<gameSquares; i++) free(previousMap[i]); free(previousMap);
+                    // Set game map
+                    set_game_map(iLifeFormIndex);
 
-                    // Set new params
-                    gameSquares = lifeforms[iLifeFormIndex].squares;
-                    gamePixel = lifeforms[iLifeFormIndex].pixel;
-                    
-                    // Allocate memory for maps
-                    gameMap     = (bool**)malloc(sizeof(bool*) * gameSquares);
-                    previousMap = (bool**)malloc(sizeof(bool*) * gameSquares);
-                    for(int i=0; i<gameSquares; i++) gameMap[i]     = (bool*)malloc(sizeof(bool) * gameSquares);
-                    for(int i=0; i<gameSquares; i++) previousMap[i] = (bool*)malloc(sizeof(bool) * gameSquares);
+                    // Set user's drawing ability
+                    if(iLifeFormIndex == 5) drawLifeForms = true;
+                    else drawLifeForms = false;
 
-                    // Copy game map from lifeform's map
-                    for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++) gameMap[i][j] = lifeforms[iLifeFormIndex].map[i][j];
+                    // Draw game map
+                    draw_game_map(hwnd, gameArea);
 
                     // Pause the game, to wait for the start button
                     gameOn = false;
-
-                    // Draw grid
-                    for(int x=10; x<gamePixel*gameSquares + 10; x+=gamePixel) {
-                        // vertical lines
-                        MoveToEx(hdc, x, 10, NULL);
-                        LineTo(hdc, x, gamePixel*gameSquares+10);
-                        // horizontal lines
-                        MoveToEx(hdc, 10, x, NULL);
-                        LineTo(hdc, gamePixel*gameSquares+10, x);
-                    }
-
-
-                    // Draw lifeforms
-                    SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-                    if(gameMap) for(int i = 0; i < gameSquares; i++) for(int j = 0; j < gameSquares; j++) {
-                        if(gameMap[i][j]) Rectangle(hdc, (10 + j * gamePixel), (10 + i * gamePixel), (10 + (j+1) * gamePixel), (10 + (i+1) * gamePixel));
-                    }
 
                     break;
                 default:
@@ -214,6 +189,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             SelectObject(hdc, (HBRUSH)GetStockObject(WHITE_BRUSH));
             Rectangle(hdc, 10, 10, 510, 510);
             DeleteObject(hPEN);
+
             EndPaint(hwnd, &ps);
             return 0;
 

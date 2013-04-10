@@ -2,11 +2,6 @@
 #include <windowsx.h>
 #include "main.h"
 
-#define IDC_LIFEFORMS   100
-#define IDB_SETBTN      101
-#define IDB_STARTBTN    102
-#define IDB_STOPBTN     103
-
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 char szClassName[ ] = "Lab4Class";

@@ -1,3 +1,8 @@
+#define IDC_LIFEFORMS   100
+#define IDB_SETBTN      101
+#define IDB_STARTBTN    102
+#define IDB_STOPBTN     103
+
 #define NUMLIFEFORMS ((int) (sizeof lifeforms / sizeof lifeforms[0]))
 
 struct {

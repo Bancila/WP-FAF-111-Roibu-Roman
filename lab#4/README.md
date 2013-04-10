@@ -52,6 +52,7 @@ Result Application
 This is a screen shot of the application's window in my native Mac OS X enviroment, running the app using [Wine](http://www.winehq.org/).
 
 ![Window Screenshot 1](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/screen1.png)
+
 ![Window Screenshot 2](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/screen2.png)
 
 Using the app

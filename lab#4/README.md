@@ -1,36 +1,42 @@
-Windows Programming Laboratory Work #3
+Windows Programming Laboratory Work #4
 ======================================
 
 Title
 -----
-Basics of Working with Mouse. GDI Primitives. Bezier Curve.
+Windows Timer. Animation.
 
 Contents
 --------
-- Mouse
-- Device context
-- GDI Primitives
-   - Line
-   - Curve
-   - Plane
-   - Bitmap image
-- Bezier curve
+- Windows timer
 
 Mandatory Objectives (completed)
 --------------------------------
-- Draw few lines of different colors and weights.
-- Draw a Bezier curve.
-- Draw few plane objects of different colors, weights, filled and not.
-- Draw 2 different objects using mouse.
+- Create an animation based on Windows timer which involves at least 5 different drawn objects.
 
 Objectives With Points (completed)
 ----------------------------------
-- Draw a custom bitmap image. **(1 pt)**
-- Add a switch that will change mouse ability to draw objects. **(2 pt)**
-- Draw a Bezier curve using mouse. **(1 pt)**
-- Fill an object with a gradient. **(1 pt)**
-- Delete objects using mouse clicking. **(2 pt)**
-- Use mouse as an eraser of an adjustable width. **(2 pt)**
+- Increase and decrease animation speed using mouse wheel. **(2 pt)**
+- Add animated objects which interact with each other. **(2-6 pt)**
+
+John Conway's "Game Of Life"
+----------------------------
+The Game Of Life is a zero-player game (meaning that its evolution is determined by its initial state, requiring no further input), developed in 1970 by the British mathematician, John Horton Conway. 
+The rules are pretty straight forward:
+1. Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+2. Any live cell with two or three live neighbours lives on to the next generation.
+3. Any live cell with more than three live neighbours dies, as if by overcrowding.
+4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+
+![Game Of Life](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/about.jpg)
+
+
+I won't go into details about this game, but I will include few links if you are currious. 
+In the research process, I found this "game" to be very interesting, and pretty philosiphical actually. 
+You'll see what I'm talking about in the YouTube links below.
+
+[Wikipedia](http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)  
+[YouTube (part 1)](http://youtu.be/FdMzngWchDk)  
+[YouTube (part 2)](http://youtu.be/k2IZ1qsx4CM)  
 
 Application Creation Steps
 --------------------------
@@ -39,39 +45,30 @@ Also, I found myself consulting the documentation on the [MSDN](http://msdn.micr
 
 First of all, I made wireframe models of the application's window and dialogbox, with general layout and functionality, using the [MockFlow](http://mockflow.com/) tool. 
 
-NOTE: In the mockup it was specified the hotkeys for zooming, but this feature was not implemented, and I do not claim points for this.
-
-![Window Mockup](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%233/screens/mockup.png)
+![Window Mockup](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/mockup.png)
 
 Result Application
 ------------------
 This is a screen shot of the application's window in my native Mac OS X enviroment, running the app using [Wine](http://www.winehq.org/).
 
-![Window screenshot](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%233/screens/screenshot.png)
+![Window Screenshot 1](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/screen1.png)
+![Window Screenshot 2](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%234/screens/screen2.png)
 
 Using the app
 -------------
-The user specifies the tool he wants to use, selecting it from the `Tools` group. How to draw: 
+To start using the application, you must select a configuration from the `Life Form` dropdown list. 
+There are 5 predefined configurations, and a `Draw Some!` option, which allows the user to set the living cells himself. 
+Confirm your choice by pressing the `Set` button.
 
-- `Pen` tool will draw a continuous line with the stroke weight equal to 1, and the selectable stroke color, by selecting this tool, and **left-clicking** on the drawing area. 
-- `Line` tool will draw a straight line between two points, with the selectable stroke weight and color, by **left-clicking** on the drawing area (start point), and **draging & releasing** the mouse botton (end point). 
-- `Polygon` tool will draw a rectangle, with selectable stroke weight and color, filled with a selectable color, or not, by **left-clicking** on the drawing area (top left corner), and **draging & releasing** the mouse botton (bottom right corner). 
-- `Ellipse` tool will draw an ellipse, with selectable stroke weight and color, filled with a selectable color, or not, by **left-clicking** on the drawing area (top left corner), and **draging & releasing** the mouse botton (bottom right corner). 
-- `Bezier` tool will draw a Bezier curve, with selectable stroke weight and color. It is done in the following manner:
-   - **Left-clicking**  - start point.
-   - **Drag & Releas**  - 1st control point.
-   - **Right-clicking** - 2st control point.
-   - **Drag & Releas**  - end point.
-- `Eraser` tool will erase the drawing area, with a selectable weight, leaving the drawing area clean. 
-
-By **Ctrl + Shift + Left Click**ing, the last **polygon** or **ellipse** will be erased from the drawing area.
+After a configuration is selected, the animation can be controled by the `Start` and `Stop` buttons. 
+The mouse wheel controls the speed. 
+The `Color` checkbox adds color randomization to the game, for additional awesomeness.
 
 Conclusions
 -----------
-This laboratory work was an interesting one. I had the opportunity to buid an applications will a lot of basic drawing features, somewhat resembling the MS Paint application. 
+This laboratory work was pretty interesting. 
+I didn't implement all my ideas, due to the lack of time, but I found out about this amazing game. 
 
-The main difficulty I encountered was with limiting the allowed draing area, but I managed to solve this issue.
+I also didn't use double buffering, or another flicker solving technique, because it won't make any difference - the application doesn't draw an image, so it would be hard to perceive the flicker free randomly appearing squares.
 
-In this laboratory work I familiarized myself with all the drawing posibilities the Windows API gives us, and with the right way of working with the mouse, and letting the user control the application features using mouse clicks. 
-This laboratory work layed an important base ground for future laboratory works, especialy in working with animations.
-
+The laboratory work was interesting because I got to implement a great concept, and I look forward to the next lab.

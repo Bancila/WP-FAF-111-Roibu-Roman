@@ -199,10 +199,25 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             return 0;
 
         case WM_LBUTTONDOWN:
+        case WM_MOUSEMOVE:
             xMouse = GET_X_LPARAM(lParam);
             yMouse = GET_Y_LPARAM(lParam);
 
+            if((xMouse > 10)&&(xMouse < 510)&&      // If inside gameArea horizontally
+               (yMouse > 10)&&(yMouse < 510)&&      // And inside gameArea vertically
+               ((message == WM_LBUTTONDOWN)||       // And left button is pressed
+               (wParam == MK_LBUTTON))&&            // Or left button is dragged
+               (drawLifeForms)){                    // And user is allowed to draw life forms
+                int i = (yMouse - 10) / gamePixel;
+                int j = (xMouse - 10) / gamePixel;
+
+                if(!gameMap[i][j]) {
+                    gameMap[i][j] = 1;
+                    draw_game_pixel(hwnd, gameArea, i, j);
+                }
+            }
             return 0;
+
         case WM_TIMER:
             if(gameOn) {
                 // Update game map

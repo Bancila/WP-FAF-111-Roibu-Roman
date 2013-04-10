@@ -104,7 +104,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 hwnd, (HMENU)IDB_STARTBTN, hInstance, NULL);
 
             // STOP button
-            hwndStopBtn = CreateWindow("Button", "Start",
+            hwndStopBtn = CreateWindow("Button", "Stop",
                 WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                 530, 215, 150, 25,
                 hwnd, (HMENU)IDB_STOPBTN, hInstance, NULL);
@@ -143,6 +143,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             drawLifeForms = false;
             gameOn = false;
 
+            // Disable Start and Stop buttons
+            EnableWindow(hwndStartBtn, FALSE);
+            EnableWindow(hwndStopBtn, FALSE);
+
             // Init Game settings
             game_of_life_initialize();
             return 0;
@@ -150,9 +154,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
                 case IDB_SETBTN:
-
                     // Get selected life form index
                     iLifeFormIndex = SendMessage(hwndLifeForms, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+
+                    // If no item is selected, break imediately
+                    if(iLifeFormIndex == CB_ERR) break;
                     
                     // Set game map
                     set_game_map(iLifeFormIndex);
@@ -167,7 +173,21 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     // Pause the game, to wait for the start button
                     gameOn = false;
 
+                    // Enable the start button, disable the stop button
+                    EnableWindow(hwndStartBtn, TRUE);
+                    EnableWindow(hwndStopBtn, FALSE);
                     break;
+
+                case IDB_STARTBTN:
+                    EnableWindow(hwndStartBtn, FALSE);
+                    EnableWindow(hwndStopBtn, TRUE);
+                    break;
+
+                case IDB_STOPBTN:
+                    EnableWindow(hwndStopBtn, FALSE);
+                    EnableWindow(hwndStartBtn, TRUE);
+                    break;
+
                 default:
                     DefWindowProc(hwnd, WM_COMMAND, wParam, lParam);
                     break;

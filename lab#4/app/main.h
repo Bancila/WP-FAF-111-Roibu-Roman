@@ -108,10 +108,10 @@ void game_of_life_initialize() {
     // Init with 0
     for(i=0;i<lifeforms[4].squares;i++) for(j=0;j<lifeforms[4].squares;j++) lifeforms[4].map[i][j] = 0;
     // left square
-    lifeforms[4].map[11][7]  = 1;
     lifeforms[4].map[11][8]  = 1;
-    lifeforms[4].map[12][7]  = 1;
+    lifeforms[4].map[11][9]  = 1;
     lifeforms[4].map[12][8]  = 1;
+    lifeforms[4].map[12][9]  = 1;
     // right square
     lifeforms[4].map[9][42]  = 1;
     lifeforms[4].map[9][43]  = 1;

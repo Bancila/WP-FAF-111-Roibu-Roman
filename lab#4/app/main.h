@@ -214,6 +214,13 @@ bool update_game_map() {
     return false;
 }
 
+void draw_game_pixel(HWND hwnd, RECT gameArea, int i, int j) {
+    HDC hdc = GetDC(hwnd);
+    SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    Rectangle(hdc, (10 + j * gamePixel), (10 + i * gamePixel), (10 + (j+1) * gamePixel), (10 + (i+1) * gamePixel));
+    ReleaseDC(hwnd, hdc);
+}
+
 void draw_game_map(HWND hwnd, RECT gameArea) {
     HDC hdc = GetDC(hwnd);
 
@@ -231,9 +238,8 @@ void draw_game_map(HWND hwnd, RECT gameArea) {
     }
 
     // Draw lifeforms
-    SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
     if(gameMap) for(int i = 0; i < gameSquares; i++) for(int j = 0; j < gameSquares; j++) {
-        if(gameMap[i][j]) Rectangle(hdc, (10 + j * gamePixel), (10 + i * gamePixel), (10 + (j+1) * gamePixel), (10 + (i+1) * gamePixel));
+        if(gameMap[i][j]) draw_game_pixel(hwnd, gameArea, i, j);
     }
 
     ReleaseDC(hwnd, hdc);

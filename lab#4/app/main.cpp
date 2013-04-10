@@ -56,12 +56,17 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hwndStopBtn;
     static HWND hwndSpeed;
 
+    static bool gameOn;
+
+    int iLifeFormIndex;
+
     int xMouse;
     int yMouse;
 
-    HDC hdc;
     PAINTSTRUCT ps;
     HPEN hPEN;
+    RECT gameArea = {11, 11, 509, 509};
+    HDC hdc = GetDC(hwnd);
 
     switch(message) {
 
@@ -75,7 +80,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
             // LIFEFORMS combobox
             hwndLifeForms = CreateWindow("ComboBox", "", 
-                CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+                CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
                 530, 65, 150, 25,
                 hwnd, (HMENU)IDC_LIFEFORMS, hInstance, NULL);
 
@@ -132,10 +137,62 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             for(int i = 0; i < NUMLIFEFORMS; i++) {
                 SendMessage(hwndLifeForms, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)lifeforms[i].szLabel);
             }
+
+            // Set game boolean
+            gameOn = false;
+
+            // Init Game settings
+            game_of_life_initialize();
             return 0;
 
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
+                case IDB_SETBTN:
+
+                    // Clear drawing area
+                    FillRect(hdc, &gameArea, (HBRUSH)(WHITE_BRUSH));
+
+                    // Get selected life form index
+                    iLifeFormIndex = SendMessage(hwndLifeForms, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+                    
+                    // Free last maps
+                    if(gameMap)     for(int i=0; i<gameSquares; i++) free(gameMap[i]);     free(gameMap);
+                    if(previousMap) for(int i=0; i<gameSquares; i++) free(previousMap[i]); free(previousMap);
+
+                    // Set new params
+                    gameSquares = lifeforms[iLifeFormIndex].squares;
+                    gamePixel = lifeforms[iLifeFormIndex].pixel;
+                    
+                    // Allocate memory for maps
+                    gameMap     = (bool**)malloc(sizeof(bool*) * gameSquares);
+                    previousMap = (bool**)malloc(sizeof(bool*) * gameSquares);
+                    for(int i=0; i<gameSquares; i++) gameMap[i]     = (bool*)malloc(sizeof(bool) * gameSquares);
+                    for(int i=0; i<gameSquares; i++) previousMap[i] = (bool*)malloc(sizeof(bool) * gameSquares);
+
+                    // Copy game map from lifeform's map
+                    for(int i=0; i<gameSquares; i++) for(int j=0; j<gameSquares; j++) gameMap[i][j] = lifeforms[iLifeFormIndex].map[i][j];
+
+                    // Pause the game, to wait for the start button
+                    gameOn = false;
+
+                    // Draw grid
+                    for(int x=10; x<gamePixel*gameSquares + 10; x+=gamePixel) {
+                        // vertical lines
+                        MoveToEx(hdc, x, 10, NULL);
+                        LineTo(hdc, x, gamePixel*gameSquares+10);
+                        // horizontal lines
+                        MoveToEx(hdc, 10, x, NULL);
+                        LineTo(hdc, gamePixel*gameSquares+10, x);
+                    }
+
+
+                    // Draw lifeforms
+                    SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+                    if(gameMap) for(int i = 0; i < gameSquares; i++) for(int j = 0; j < gameSquares; j++) {
+                        if(gameMap[i][j]) Rectangle(hdc, (10 + j * gamePixel), (10 + i * gamePixel), (10 + (j+1) * gamePixel), (10 + (i+1) * gamePixel));
+                    }
+
+                    break;
                 default:
                     DefWindowProc(hwnd, WM_COMMAND, wParam, lParam);
                     break;
@@ -150,6 +207,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
         case WM_PAINT:
             hdc = BeginPaint(hwnd, &ps);
+
+            // Draw game area
             hPEN = CreatePen(PS_SOLID, 1, RGB(0,0,0));
             SelectObject(hdc, hPEN);
             SelectObject(hdc, (HBRUSH)GetStockObject(WHITE_BRUSH));

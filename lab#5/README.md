@@ -42,9 +42,9 @@ The user can also perform an autocompleted search of the classifications. He is 
 Screen Shots
 ------------
 
-![Home Page](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%235/screens/homepage.png) 
+![Homepage](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%235/screens/homepage.png) 
 
-![Sign-In Page](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%235/screens/signin.png) 
+![SignIn](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%235/screens/signin.png) 
 
 Conclusions
 -----------

@@ -20,9 +20,6 @@ Result Application
 ------------------
 
 
-Screen Shots
-------------
-
 ![AppWindow](https://raw.github.com/TUM-FAF/WP-FAF-111-Roibu-Roman/master/lab%236-7/screens/window.png) 
 
 

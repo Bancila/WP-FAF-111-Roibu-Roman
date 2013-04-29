@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Pomodoro</title>
+
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.1.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
+
+    <!-- Pomodoro references -->
+    <link href="/css/default.css" rel="stylesheet" />
+    <script src="/js/default.js"></script>
+</head>
+<body>
+
+    <div id="header">
+        <img id="icon" src="images/icon.png">
+        <div id="title">Pomodoro App</div>
+    </div>
+ 
+    <div id="pomodoro">
+        <div id="sessionCounter">Session 0</div>
+        <div id="sessionTime">25:00</div>
+        <button id="startButton" onclick="startButtonClickHandler()">Start</button>
+        <button id="stopButton" onclick="stopButtonClickHandler()">Stop</button>
+        <div id="settings">
+            <div id="settings-item">Session length</div>
+            <select id="sessionSelect" onchange="setSessionMinutes()">
+                <option selected="selected" value="25">25 Minutes</option>
+                <option value="30">30 Minutes</option>
+                <option value="35">35 Minutes</option>
+                <option value="40">40 Minutes</option>
+                <option value="45">45 Minutes</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="about">
+        <h3 style="margin-top: 0px;">What Is The Pomodoro Technique?</h3>
+        <p>The Pomodoro Technique is a time management method developed by Francesco Cirillo in the late 1980s. The technique uses a timer to break down periods of work into 25-minute intervals called 'Pomodori' (from the Italian word for 'tomatoes') separated by short breaks. Closely related to concepts such as timeboxing and iterative and incremental development used in software design, the method has been adopted in pair programming contexts. The method is based on the idea that frequent breaks can improve mental agility.</p>
+        <h3>How To Us The Pomodoro Technique?</h3>
+        <p>There are five basic steps to implementing the technique:</p>
+        <ul>
+            <li>Decide on the task to be done.</li>
+            <li>set the Pomodoro timer (25 minutes recomended).</li>
+            <li>Work on the task until the timer rings.</li>
+            <li>Take a short break (3-5 minutes).</li>
+            <li>Every four "pomodori" take a longer break (15–30 minutes).</li>
+        </ul>
+        <p>The stages of planning, tracking, recording, processing and visualizing are fundamental to the technique. In the planning phase tasks are prioritized by recording them in a "To Do Today" list. This enables users to estimate the effort tasks require. As "pomodori" are completed, they are recorded, adding to a sense of accomplishment and providing raw data for subsequent self-observation and improvement.</p>
+        <p>For the purposes of the technique "pomodoro" refers to an indivisible 25-minute period of time. After task completion, any time remaining in the "pomodoro" is devoted to overlearning. Regular breaks are taken, aiding assimilation. A short (3-5 minute) rest separates consecutive "pomodori". Four "pomodori" form a set. A longer (15-30 minute) rest is taken between sets.</p>
+        <p>To learn even more about the Pomodoro Technique, visit the <a href="http://www.pomodorotechnique.com/">official site</a>.</p>
+    </div>
+    
+    <audio id="success-sound"><source src="sounds/success.mp3" /></audio>
+    <audio id="fail-sound"><source src="sounds/fail.mp3" /></audio>
+</body>
+</html>

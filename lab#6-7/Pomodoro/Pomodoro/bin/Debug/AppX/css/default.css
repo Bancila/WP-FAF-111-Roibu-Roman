@@ -1,0 +1,90 @@
+﻿body {
+}
+
+#header {
+    margin: 30px 0px 0px 40px;
+    vertical-align: bottom;
+}
+
+#title {
+    margin-left: 40px;
+    font-size: 90px;
+    font-weight:lighter;
+}
+
+#pomodoro, #header {
+    margin-left: 65px;
+}
+
+h3, a {
+    color: #ff3333;
+}
+
+a:hover {
+    color: #8c001a;
+}
+
+option:checked, select:focus::-ms-value, ::selection {
+    background-color: #ff3333;
+}
+
+
+#icon, #title {
+    display: inline;
+}
+
+#pomodoro {
+    display: inline-block;
+    width: 300px;
+    margin-top: 100px;
+}
+
+#sessionCounter {
+    font-size: 30px;
+}
+
+#about {
+    display: inline;
+    position: absolute;
+    margin: 50px;
+}
+
+#sessionTime {
+    font: 100px Consolas, Arial, Verdana;
+    text-align: center;
+    width: 200px;
+    margin-top: 10px;
+}
+
+#startButton, #stopButton{
+    margin-top: 20px;
+    width: 120px;
+}
+
+#stopButton {
+    margin-left: 34px;
+}
+
+#settings {
+    margin-top: 40px;
+}
+
+#settings-item {
+    font-size: 20px;
+    display: inline;
+    margin-right: 20px;
+}
+
+
+
+@media screen and (-ms-view-state: fullscreen-landscape) {
+}
+
+@media screen and (-ms-view-state: filled) {
+}
+
+@media screen and (-ms-view-state: snapped) {
+}
+
+@media screen and (-ms-view-state: fullscreen-portrait) {
+}

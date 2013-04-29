@@ -1,0 +1,13 @@
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bin\Debug\resources.pri
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bin\Debug\AppxManifest.xml
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bin\Debug\Pomodoro.build.appxrecipe
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\priconfig.xml.intermediate
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\layout.resfiles.intermediate
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\resources.resfiles.intermediate
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\pri.resfiles.intermediate
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\priconfig.xml
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\layout.resfiles
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\resources.resfiles
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\pri.resfiles
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\LanguageQualifiers.txt
+C:\Users\Roma\Documents\WinRT\Pomodoro\Pomodoro\bld\Debug\ProjectArchitectures.txt

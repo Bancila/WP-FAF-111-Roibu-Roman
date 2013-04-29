@@ -96,6 +96,7 @@ function enableAndDisableButtons() {
                 setSessionMinutes();
             } else {
                 // Restore application state here.
+                updateTimeLabel();
             }
             args.setPromise(WinJS.UI.processAll());
         }
